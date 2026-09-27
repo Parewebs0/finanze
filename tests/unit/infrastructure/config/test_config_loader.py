@@ -181,3 +181,52 @@ class TestToYamlSafe:
         assert ConfigLoader._to_yaml_safe("hello") == "hello"
         assert ConfigLoader._to_yaml_safe(42) == 42
         assert ConfigLoader._to_yaml_safe(None) is None
+
+
+class TestExpenseAnalysisConfig:
+    @pytest.mark.asyncio
+    async def test_rules_budgets_and_overrides_roundtrip(self, tmp_path):
+        from domain.settings import (
+            ExpenseAnalysisConfig,
+            ExpenseBudget,
+            ExpenseCategoryOverride,
+            ExpenseCategoryRule,
+        )
+
+        user = _make_user(tmp_path)
+        loader = ConfigLoader()
+        await loader.connect(user)
+
+        settings = _make_settings()
+        settings.expenseAnalysis = ExpenseAnalysisConfig(
+            rules=[
+                ExpenseCategoryRule(pattern="mercadona|lidl", category="groceries"),
+                ExpenseCategoryRule(
+                    pattern="a favor de", category="housing", amount=-50
+                ),
+            ],
+            budgets=[ExpenseBudget(category="groceries", amount=300)],
+            overrides=[ExpenseCategoryOverride(txId="tx-1", category="travel")],
+        )
+        await loader.save(settings)
+
+        loader._cache = None
+        loaded = await loader.load()
+
+        rules = loaded.expenseAnalysis.rules
+        assert rules[0].pattern == "mercadona|lidl"
+        assert rules[0].amount is None
+        assert rules[1].amount == -50
+        assert loaded.expenseAnalysis.budgets[0].amount == 300
+        assert loaded.expenseAnalysis.overrides[0].txId == "tx-1"
+
+    @pytest.mark.asyncio
+    async def test_defaults_to_empty_config(self, tmp_path):
+        user = _make_user(tmp_path)
+        loader = ConfigLoader()
+        await loader.connect(user)
+
+        loaded = await loader.load()
+
+        assert loaded.expenseAnalysis.rules == []
+        assert loaded.expenseAnalysis.budgets == []
