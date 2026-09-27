@@ -171,7 +171,7 @@ class TradeRepublicClient:
 
         if waf_token:
             self._tr_api._websession.headers["x-aws-waf-token"] = waf_token
-        else:
+        elif not use_v2:
             return EntityLoginResult(
                 LoginResultCode.MANUAL_LOGIN,
                 details={"phone": phone, "password": pin},

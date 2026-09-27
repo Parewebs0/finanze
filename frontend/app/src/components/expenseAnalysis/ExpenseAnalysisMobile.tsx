@@ -19,7 +19,6 @@ import {
   TrendingDown,
   TrendingUp,
   Wallet,
-  WandSparkles,
   X,
 } from "lucide-react"
 import {
@@ -62,7 +61,6 @@ import {
   ProgressBar,
   RecurringList,
   Rule503020Bars,
-  RulesEditor,
   fill,
   useCategoryLabel,
 } from "./shared"
@@ -408,7 +406,6 @@ export function ExpenseAnalysisMobile({ state }: Props) {
     return (
       <div className="space-y-6">
         {header}
-        <CategorizerCard state={state} />
         <Card className={cn(PAGE_CARD_CLASS, "p-6")}>
           <div className="flex flex-col items-center py-6 text-center">
             <Wallet className="h-10 w-10 mb-3 text-muted-foreground opacity-60" />
@@ -432,6 +429,7 @@ export function ExpenseAnalysisMobile({ state }: Props) {
             </Button>
           </div>
         </Card>
+        <CategorizerCard state={state} />
       </div>
     )
   }
@@ -444,9 +442,6 @@ export function ExpenseAnalysisMobile({ state }: Props) {
       className="space-y-4"
     >
       <motion.div variants={fadeListItem}>{header}</motion.div>
-      <motion.div variants={fadeListItem}>
-        <CategorizerCard state={state} />
-      </motion.div>
 
       {(brush || selectedCategory) && (
         <motion.div variants={fadeListItem}>
@@ -852,10 +847,13 @@ export function ExpenseAnalysisMobile({ state }: Props) {
                 </MobileSection>
                 <MobileSection
                   title={t.expenseAnalysis.rules.title}
-                  icon={WandSparkles}
+                  icon={Target}
                   subtitle={t.expenseAnalysis.rules.subtitle}
                 >
-                  <RulesEditor state={state} compact />
+            <CategorizerCard state={state} />
+<div className="mt-6 border-t pt-6">
+                    <CategorizerCard state={state} />
+                  </div>
                 </MobileSection>
               </TabsContent>
             </Tabs>
