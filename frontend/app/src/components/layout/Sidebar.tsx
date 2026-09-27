@@ -28,6 +28,7 @@ import {
   Settings,
   LucideIcon,
   Calculator,
+  ChartPie,
 } from "lucide-react"
 import { useState, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/Button"
@@ -258,6 +259,11 @@ export function Sidebar() {
       path: "/transactions",
       label: t.common.transactions,
       icon: <ArrowLeftRight size={20} />,
+    },
+    {
+      path: "/analysis",
+      label: t.expenseAnalysis.navLabel,
+      icon: <ChartPie size={20} />,
     },
     {
       path: "/calculations",

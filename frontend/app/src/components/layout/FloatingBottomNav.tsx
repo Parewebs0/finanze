@@ -19,6 +19,7 @@ import {
   Settings,
   FileUp,
   MoreVertical,
+  ChartPie,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useI18n } from "@/i18n"
@@ -260,7 +261,8 @@ export function FloatingBottomNav() {
     if (moreIndex !== -1) {
       if (
         location.pathname.startsWith("/settings") ||
-        location.pathname.startsWith("/export")
+        location.pathname.startsWith("/export") ||
+        location.pathname.startsWith("/analysis")
       ) {
         return moreIndex
       }
@@ -487,6 +489,20 @@ export function FloatingBottomNav() {
                         )}
                       >
                         <div className="relative z-20 flex flex-col gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start select-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
+                            tabIndex={-1}
+                            onMouseDown={event => event.preventDefault()}
+                            onClick={() => {
+                              setMoreOpen(false)
+                              navigate("/analysis")
+                            }}
+                          >
+                            <ChartPie size={16} className="mr-2" />
+                            {t.expenseAnalysis.navLabel}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
