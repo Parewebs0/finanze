@@ -1,6 +1,7 @@
 import type {
   AnalysisTx,
   DateRange,
+  ExpenseCategoryId,
   RangeAggregates,
   Rule503020Result,
 } from "@/types/expenseAnalysis"
@@ -31,6 +32,39 @@ export function investmentTotal(agg: RangeAggregates): number {
 export function savingsRate(agg: RangeAggregates): number {
   const invested = investmentTotal(agg)
   return agg.income > 0 ? (invested / agg.income) * 100 : 0
+}
+
+export type RuleSlice = "needs" | "wants" | "savings"
+
+export interface RuleSliceItem {
+  category: ExpenseCategoryId | "liquid"
+  value: number
+}
+
+export function rule503020Slices(
+  agg: RangeAggregates,
+): Record<RuleSlice, RuleSliceItem[]> {
+  const needs: RuleSliceItem[] = []
+  const wants: RuleSliceItem[] = []
+  const savings: RuleSliceItem[] = []
+  for (const c of agg.byCategory) {
+    if (c.group !== "expense") continue
+    const value = round2(-c.total)
+    if (value <= 0) continue
+    const item = { category: c.category, value }
+    if (SAVING_CATS.has(c.category)) savings.push(item)
+    else if (NEEDS_CATEGORIES.has(c.category)) needs.push(item)
+    else wants.push(item)
+  }
+  if (agg.savings > 0) {
+    savings.push({ category: "liquid", value: round2(agg.savings) })
+  }
+  const sort = (a: RuleSliceItem, b: RuleSliceItem) => b.value - a.value
+  return {
+    needs: needs.sort(sort),
+    wants: wants.sort(sort),
+    savings: savings.sort(sort),
+  }
 }
 
 export function rule503020(agg: RangeAggregates): Rule503020Result {
