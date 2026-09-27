@@ -29,8 +29,8 @@ export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   { id: "travel", group: "expense", color: "#38bdf8" },
   { id: "fees", group: "expense", color: "#94a3b8" },
   { id: "uncategorized", group: "expense", color: "#9ca3af" },
-  { id: "ownTransfer", group: "transfer", color: "#64748b" },
-  { id: "savingsInvestment", group: "transfer", color: "#8b5cf6" },
+  { id: "ownTransfer", group: "expense", color: "#64748b" },
+  { id: "savingsInvestment", group: "expense", color: "#8b5cf6" },
 ]
 
 const BY_ID = new Map(EXPENSE_CATEGORIES.map(c => [c.id, c]))
