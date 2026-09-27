@@ -20,17 +20,25 @@ from domain.transactions import AccountTx, TxType
 
 # First sync goes back this far (the bank decides what it actually returns).
 INITIAL_HISTORY_DAYS = 730
+# Santander and several ES ASPSPs reject windows longer than ~90 days.
+ENABLEBANKING_MAX_HISTORY_DAYS = 90
 # Later syncs re-read a window to catch late bookings; refs dedup the overlap.
 INCREMENTAL_HISTORY_DAYS = 90
 MAX_PAGES_PER_ACCOUNT = 100
 
-# Enable Banking uses BOOK; some ASPSPs still emit BOOKED.
-BOOKED_STATUSES = {"BOOK", "BOOKED"}
+# Enable Banking uses BOOK; some ASPSPs still emit BOOKED or OTHR.
+BOOKED_STATUSES = {"BOOK", "BOOKED", "OTHR"}
 
 
-def history_start(registered_refs: set[str], today: Optional[date] = None) -> str:
+def history_start(
+    registered_refs: set[str],
+    today: Optional[date] = None,
+    max_days: Optional[int] = None,
+) -> str:
     today = today or datetime.now(tzlocal()).date()
     days = INCREMENTAL_HISTORY_DAYS if registered_refs else INITIAL_HISTORY_DAYS
+    if max_days is not None:
+        days = min(days, max_days)
     return (today - timedelta(days=days)).isoformat()
 
 
