@@ -5,7 +5,7 @@ import type { AnalysisTx } from "@/types/expenseAnalysis"
 import { convertCurrency } from "@/utils/financialDataUtils"
 import type { Categorizer } from "./categorization"
 import { getCategory } from "./categories"
-import { analysisDateFor } from "./payroll"
+import { applyMonthShifts } from "./payroll"
 
 /**
  * Finanze → analysis adapter.
@@ -64,7 +64,7 @@ export function toAnalysisTx(
     id: tx.id,
     ref: tx.ref,
     date,
-    analysisDate: analysisDateFor(date, category, concept, tx.entity?.name),
+    analysisDate: date,
     amount: rounded,
     originalAmount: original,
     currency,
@@ -81,7 +81,7 @@ export function toAnalysisTxs(
   txs: AccountTx[],
   options: AdapterOptions,
 ): AnalysisTx[] {
-  return txs
-    .map(tx => toAnalysisTx(tx, options))
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+  return applyMonthShifts(txs.map(tx => toAnalysisTx(tx, options))).sort(
+    (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0),
+  )
 }

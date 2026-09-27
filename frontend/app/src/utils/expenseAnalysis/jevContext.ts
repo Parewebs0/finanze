@@ -1,28 +1,22 @@
 const STORAGE_KEY = "finanze.jevContext"
 
-export const DEFAULT_JEV_CONTEXT = `Hogar: finanzas personales en España.
-Cuentas propias: Santander (corriente) y MyInvestor (ahorro / inversión).
+export const DEFAULT_JEV_CONTEXT = `Notas de esta casa (se envían a Jev como user_notes, además del perfil estructurado):
 
-Cómo leer los conceptos
-- Los bancos escriben en MAYÚSCULAS y abreviado.
-- Un importe positivo entra. Un importe negativo sale.
+Cuentas
+- Santander = cuenta corriente del día a día. Aquí cae la nómina y salen los pagos con tarjeta.
+- MyInvestor = ahorro / inversión. Cualquier transferencia o traspaso hacia MyInvestor es savingsInvestment, no gasto.
 
-Nómina
-- NOMINA, ABONO NOMINA, SALARIO, PAYROLL = sueldo del mes.
-- En España suele caer los últimos días laborables del mes anterior.
+Nómina y ahorro
+- NOMINA / ABONO NOMINA / SALARIO = sueldo. En España suele entrar el 28–31.
 - Ese sueldo pertenece al mes siguiente.
-
-Ahorro justo después de la nómina
-- Traspaso o transferencia a MyInvestor / broker / fondo el mismo día o al día siguiente de la nómina = savingsInvestment, no gasto.
-- También pertenece al mes del sueldo (mes siguiente si se pagó a final de mes).
+- Justo después de la nómina suelo pasar parte a MyInvestor. Aunque el banco solo ponga TRANSFERENCIA, eso es el barrido de ahorro del sueldo y también pertenece al mes siguiente.
 
 Bizum y cenas
-- Si hay un pago a restaurante, bar, Glovo o Uber Eats y poco después un BIZUM RECIBIDO de importe parecido, ese Bizum es la otra persona pagando su parte de esa comida.
-- No es ingreso extra. El gasto real es la cena menos lo recuperado.
-- BIZUM ENVIADO a un amigo o familiar es familyFriends, no restaurante.
+- Pago en restaurante / bar / Glovo / Uber Eats y al poco un BIZUM RECIBIDO de un importe parecido (a menudo la mitad) = me están devolviendo su parte de esa cena.
+- Ese Bizum no es ingreso extra. La cena sigue en restaurants; el Bizum es bizumReceived.
+- BIZUM ENVIADO a un amigo o familiar = familyFriends.
 
-Otras convenciones
-- Transferencia entre cuentas mías (Santander ↔ MyInvestor cash) = ownTransfer si no es aportación a fondos.
+Comercios habituales
 - Mercadona, Lidl, Carrefour, Consum = groceries.
 - Netflix, Spotify, iCloud = subscriptions.
 `
