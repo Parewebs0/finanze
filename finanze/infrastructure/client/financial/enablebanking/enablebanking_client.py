@@ -197,7 +197,11 @@ class EnableBankingClient(ConnectableIntegration):
         psu_type: str = DEFAULT_PSU_TYPE,
     ) -> dict:
         body = {
-            "access": {"valid_until": valid_until},
+            "access": {
+                "valid_until": valid_until,
+                "balances": True,
+                "transactions": True,
+            },
             "aspsp": {"name": aspsp_name, "country": aspsp_country},
             "state": state,
             "redirect_url": self.REDIRECT_URL,

@@ -24,6 +24,9 @@ INITIAL_HISTORY_DAYS = 730
 INCREMENTAL_HISTORY_DAYS = 90
 MAX_PAGES_PER_ACCOUNT = 100
 
+# Enable Banking uses BOOK; some ASPSPs still emit BOOKED.
+BOOKED_STATUSES = {"BOOK", "BOOKED"}
+
 
 def history_start(registered_refs: set[str], today: Optional[date] = None) -> str:
     today = today or datetime.now(tzlocal()).date()
@@ -99,7 +102,7 @@ def map_enablebanking_tx(
     """Map an Enable Banking ``Transaction`` object. Pending ones are skipped
     because their references usually change once booked."""
     status = (raw.get("status") or "BOOK").upper()
-    if status != "BOOK":
+    if status not in BOOKED_STATUSES:
         return None
 
     amount_obj = raw.get("transaction_amount") or {}
