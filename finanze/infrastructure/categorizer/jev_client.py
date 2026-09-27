@@ -6,6 +6,7 @@ import httpx
 from domain.categorizer import (
     CATEGORY_CRITERIA,
     CATEGORY_IDS,
+    HOUSEHOLD_CONTEXT,
     CategorizerAssignment,
     CategorizerConnection,
     CategorizerPayment,
@@ -48,13 +49,12 @@ def choice_question(payment_id: str) -> dict[str, Any]:
     return {
         "type": "choice",
         "instructions": (
-            f"Categorize the bank payment at `{path}`. "
-            "Use its concept, signed amount, date and bank. "
-            "A negative amount is money leaving the account; "
-            "a positive amount is money coming in. "
-            "Concepts are often in Spanish. "
-            "Match the sign of the amount to the category "
-            "(inflow vs outflow). "
+            "Use `context` (Spanish household banking) plus the payment at "
+            f"`{path}` (concept, signed amount, date, bank, direction). "
+            "Concepts are abbreviated Spanish bank texts. "
+            "A negative amount is outflow; a positive amount is inflow. "
+            "NÓMINA, ABONO NOMINA, SALARIO or PAYROLL on an inflow is salary. "
+            "Match inflow/outflow to the category. "
             "Pick uncategorized when no option is a clear fit."
         ),
         "criteria": CATEGORY_CRITERIA,
@@ -110,6 +110,7 @@ class JevCategorizerClient:
         for start in range(0, len(payments), BATCH_SIZE):
             batch = payments[start : start + BATCH_SIZE]
             state = {
+                "context": HOUSEHOLD_CONTEXT,
                 "payments": {
                     payment.id: {
                         "date": payment.date,
@@ -122,7 +123,7 @@ class JevCategorizerClient:
                         ),
                     }
                     for payment in batch
-                }
+                },
             }
             questions = {payment.id: choice_question(payment.id) for payment in batch}
             body = await self._post(connection, state, questions)

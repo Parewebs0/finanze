@@ -1,18 +1,30 @@
 import type { ExpenseCategoryId } from "@/types/expenseAnalysis"
 import { parseIsoDate, toIsoDate } from "./dates"
 
-/** Companies sometimes pay salary 1–4 days before month start. */
-export const EARLY_PAYROLL_DAYS = 4
+/** Companies sometimes pay salary on the last business days of the previous month. */
+export const EARLY_PAYROLL_DAYS = 5
+
+const SALARY_HINT =
+  /n[oó]mina|abono\s*nomina|payroll|salary|salario|paga\s*extra|finiquito/i
+
+export function looksLikeSalary(
+  category: ExpenseCategoryId | string | undefined,
+  concept?: string,
+): boolean {
+  if (category === "salary") return true
+  return Boolean(concept && SALARY_HINT.test(concept))
+}
 
 /**
- * Salary booked on the last 4 calendar days of a month counts as the next
- * month's income. Everything else keeps the bank date.
+ * Salary booked on the last days of a month counts as the 1st of the next
+ * month so August does not show two nóminas.
  */
 export function analysisDateFor(
   date: string,
-  category: ExpenseCategoryId,
+  category: ExpenseCategoryId | string | undefined,
+  concept?: string,
 ): string {
-  if (category !== "salary") return date
+  if (!looksLikeSalary(category, concept)) return date
   const booked = parseIsoDate(date)
   const lastDay = new Date(
     booked.getFullYear(),
