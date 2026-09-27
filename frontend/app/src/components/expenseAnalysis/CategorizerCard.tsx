@@ -76,6 +76,14 @@ function ContextModal({
 export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
   const { t } = useI18n()
   const copy = t.expenseAnalysis.categorizer
+  const contextCopy = {
+    button: "Contexto",
+    title: "Contexto del clasificador",
+    hint: "Este texto se le pasa a Jev junto a cada movimiento. Ajusta gustos, comercios o reglas de tu casa.",
+    save: "Guardar",
+    reset: "Restaurar por defecto",
+    cancel: "Cancelar",
+  }
   const connected = state.categorizer?.connected === true
   const [provider, setProvider] = useState<CategorizerProvider>(
     state.categorizer?.provider ?? "openrouter",
@@ -257,7 +265,7 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
             }}
           >
             <FileText className="mr-2 h-4 w-4" />
-            {copy.contextButton ?? "Contexto"}
+            {contextCopy.button}
           </Button>
         </div>
 
@@ -276,11 +284,11 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
       </CardContent>
       <ContextModal
         open={contextOpen}
-        title={copy.contextTitle ?? "Contexto del clasificador"}
-        hint={copy.contextHint ?? "Este texto se le pasa a Jev con cada movimiento."}
-        saveLabel={copy.contextSave ?? "Guardar"}
-        resetLabel={copy.contextReset ?? "Restaurar por defecto"}
-        cancelLabel={copy.contextCancel ?? "Cancelar"}
+        title={contextCopy.title}
+        hint={contextCopy.hint}
+        saveLabel={contextCopy.save}
+        resetLabel={contextCopy.reset}
+        cancelLabel={contextCopy.cancel}
         value={contextDraft}
         onChange={setContextDraft}
         onSave={() => {
