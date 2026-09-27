@@ -292,6 +292,28 @@ export function useExpenseAnalysis() {
     ) {
       return entityParam
     }
+    // Prefer the entity the user picked last time (persisted across visits).
+    try {
+      const stored = localStorage.getItem("finanze.expenseAnalysis.entity")
+      if (
+        stored &&
+        analysisEntities.some(entity => entity.id === stored)
+      ) {
+        return stored
+      }
+    } catch {
+      /* ignore */
+    }
+    // Default to Santander (BSCHESMMXXX, or any name containing "santander")
+    // so the user doesn't have to keep re-picking a bank every time the page
+    // is opened. Investor / Trade Republic entities don't carry account
+    // transactions, so they make no sense as default for this view.
+    const santander = analysisEntities.find(
+      entity =>
+        entity.natural_id === "BSCHESMMXXX" ||
+        /santander/i.test(entity.name ?? ""),
+    )
+    if (santander) return santander.id
     return analysisEntities[0]?.id ?? null
   }, [entitiesLoaded, entityParam, analysisEntities])
   const selectedEntity =
@@ -326,6 +348,20 @@ export function useExpenseAnalysis() {
     },
     [setParams],
   )
+
+  // Persist the resolved entity so it survives page reloads and tab
+  // switches. Skips the first render (entities still loading).
+  useEffect(() => {
+    if (!resolvedEntityId) return
+    try {
+      localStorage.setItem(
+        "finanze.expenseAnalysis.entity",
+        resolvedEntityId,
+      )
+    } catch {
+      /* ignore */
+    }
+  }, [resolvedEntityId])
 
   useEffect(() => {
     if (!resolvedEntityId || entityParam === resolvedEntityId) return
