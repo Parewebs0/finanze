@@ -35,7 +35,6 @@ import {
   isInRange,
   monthlyEvolution,
   parseIsoDate,
-  patternFromConcept,
   pctDelta,
   presetRange,
   previousRange,
@@ -159,28 +158,6 @@ export function useExpenseAnalysisConfig() {
     [settings, saveSettings],
   )
 
-  const addRule = useCallback(
-    (pattern: string, category: ExpenseCategoryId, amount?: number | null) =>
-      persist({
-        ...config,
-        rules: [
-          ...config.rules,
-          {
-            pattern,
-            category,
-            amount: amount === undefined || amount === null ? null : amount,
-          },
-        ],
-      }),
-    [config, persist],
-  )
-
-  const removeRule = useCallback(
-    (index: number) =>
-      persist({ ...config, rules: config.rules.filter((_, i) => i !== index) }),
-    [config, persist],
-  )
-
   const setBudget = useCallback(
     (category: ExpenseCategoryId, amount: number) =>
       persist({
@@ -202,28 +179,21 @@ export function useExpenseAnalysisConfig() {
     [config, persist],
   )
 
-  /** Ledger "recategorize" (+ optional "create rule" learning). */
   const recategorize = useCallback(
-    (tx: AnalysisTx, category: ExpenseCategoryId, createRule: boolean) => {
-      const overrides = [
-        ...config.overrides.filter(o => o.txId !== tx.id),
-        { txId: tx.id, category },
-      ]
-      const rules = createRule
-        ? [
-            ...config.rules,
-            { pattern: patternFromConcept(tx.concept), category, amount: null },
-          ]
-        : config.rules
-      return persist({ ...config, overrides, rules })
+    (tx: AnalysisTx, category: ExpenseCategoryId) => {
+      return persist({
+        ...config,
+        overrides: [
+          ...config.overrides.filter(o => o.txId !== tx.id),
+          { txId: tx.id, category },
+        ],
+      })
     },
     [config, persist],
   )
 
   return {
     config,
-    addRule,
-    removeRule,
     setBudget,
     removeBudget,
     recategorize,

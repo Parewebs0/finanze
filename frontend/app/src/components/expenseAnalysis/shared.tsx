@@ -673,7 +673,6 @@ export function MovementRow({
               await configApi.recategorize(
                 tx,
                 e.target.value as ExpenseCategoryId,
-                false,
               )
               setEditing(false)
             }}
