@@ -44,7 +44,7 @@ from domain.use_cases.fetch_external_financial_data import FetchExternalFinancia
 
 
 class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
-    EXTERNALLY_PROVIDED_POSITION_UPDATE_COOLDOWN = 7200
+    EXTERNALLY_PROVIDED_POSITION_UPDATE_COOLDOWN = 60
 
     def __init__(
         self,
@@ -70,6 +70,12 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
 
         self._log = logging.getLogger(__name__)
 
+    def _has_transactions_fetch(self, last_fetch) -> bool:
+        for record in last_fetch or []:
+            if getattr(record, "feature", None) == Feature.TRANSACTIONS:
+                return True
+        return False
+
     async def execute(self, fetch_request: ExternalFetchRequest) -> FetchResult:
         external_entity_id = fetch_request.external_entity_id
         external_entity = await self._external_entity_port.get_by_id(external_entity_id)
@@ -90,11 +96,22 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
 
         async with self._lock:
             last_fetch = await self._last_fetches_port.get_by_entity_id(entity_id)
-            result = handle_cooldown(
-                last_fetch, self.EXTERNALLY_PROVIDED_POSITION_UPDATE_COOLDOWN
-            )
-            if result:
-                return result
+            if self._has_transactions_fetch(last_fetch):
+                result = handle_cooldown(
+                    last_fetch, self.EXTERNALLY_PROVIDED_POSITION_UPDATE_COOLDOWN
+                )
+                if result:
+                    self._log.info(
+                        "External fetch cooldown for entity %s: %s",
+                        entity_id,
+                        result.details,
+                    )
+                    return result
+            else:
+                self._log.info(
+                    "Skipping cooldown for %s: transactions never fetched",
+                    entity_id,
+                )
 
             external_entity_provider = external_entity.provider
             provider = self._external_entity_fetchers[external_entity_provider]
@@ -124,6 +141,16 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
                     if transactions is not None:
                         if transactions.account:
                             await self._transaction_port.save(transactions)
+                            self._log.info(
+                                "Saved %s PSD2 transactions for entity %s",
+                                len(transactions.account),
+                                entity_id,
+                            )
+                        else:
+                            self._log.warning(
+                                "PSD2 transactions fetch returned 0 rows for entity %s",
+                                entity_id,
+                            )
                         features.append(Feature.TRANSACTIONS)
 
                     await self._update_last_fetch(entity_id, features)
@@ -159,6 +186,9 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
         Returns (transactions, failed). A failure here doesn't discard the
         already fetched position, except when the link expired."""
         if self._transaction_port is None:
+            self._log.warning(
+                "Transaction port missing; cannot persist PSD2 movements"
+            )
             return None, False
 
         try:
@@ -166,9 +196,15 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
                 entity_id, DataSource.REAL
             )
             registered_refs = {tx.ref for tx in (existing.account or [])}
+            self._log.info(
+                "Fetching PSD2 transactions for entity %s (known refs=%s)",
+                entity_id,
+                len(registered_refs),
+            )
             transactions = await provider.transactions(fetch_request, registered_refs)
             return transactions, False
         except FeatureNotSupported:
+            self._log.warning("Provider does not support transactions")
             return None, False
         except ExternalEntityLinkExpired:
             raise
