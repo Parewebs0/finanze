@@ -1,11 +1,14 @@
 import type { ExpenseCategoryId } from "@/types/expenseAnalysis"
 import { parseIsoDate, toIsoDate } from "./dates"
 
-/** Companies sometimes pay salary on the last business days of the previous month. */
+/** Companies pay salary (and the user often sweeps savings) on the last days of the month. */
 export const EARLY_PAYROLL_DAYS = 5
 
 const SALARY_HINT =
   /n[oó]mina|abono\s*nomina|payroll|salary|salario|paga\s*extra|finiquito/i
+
+const SAVINGS_SWEEP_HINT =
+  /myinvestor|my investor|indexa|degiro|trade\s*republic|broker|ahorro|fondo|inversi[oó]n|traspaso/i
 
 export function looksLikeSalary(
   category: ExpenseCategoryId | string | undefined,
@@ -15,24 +18,48 @@ export function looksLikeSalary(
   return Boolean(concept && SALARY_HINT.test(concept))
 }
 
-/**
- * Salary booked on the last days of a month counts as the 1st of the next
- * month so August does not show two nóminas.
- */
-export function analysisDateFor(
-  date: string,
+export function looksLikePayrollSweep(
   category: ExpenseCategoryId | string | undefined,
   concept?: string,
-): string {
-  if (!looksLikeSalary(category, concept)) return date
+  entityName?: string,
+): boolean {
+  if (category === "savingsInvestment") return true
+  const blob = `${concept ?? ""} ${entityName ?? ""}`
+  if (SAVINGS_SWEEP_HINT.test(blob)) return true
+  if (category === "ownTransfer" && /myinvestor|indexa|broker|fondo/i.test(blob)) {
+    return true
+  }
+  return false
+}
+
+function isLastDaysOfMonth(date: string): boolean {
   const booked = parseIsoDate(date)
   const lastDay = new Date(
     booked.getFullYear(),
     booked.getMonth() + 1,
     0,
   ).getDate()
-  if (booked.getDate() > lastDay - EARLY_PAYROLL_DAYS) {
-    return toIsoDate(new Date(booked.getFullYear(), booked.getMonth() + 1, 1))
-  }
-  return date
+  return booked.getDate() > lastDay - EARLY_PAYROLL_DAYS
+}
+
+function firstOfNextMonth(date: string): string {
+  const booked = parseIsoDate(date)
+  return toIsoDate(new Date(booked.getFullYear(), booked.getMonth() + 1, 1))
+}
+
+/**
+ * Salary and the savings sweep that follows it, when booked on the last days
+ * of a month, count as the 1st of the next month.
+ */
+export function analysisDateFor(
+  date: string,
+  category: ExpenseCategoryId | string | undefined,
+  concept?: string,
+  entityName?: string,
+): string {
+  const shift =
+    looksLikeSalary(category, concept) ||
+    looksLikePayrollSweep(category, concept, entityName)
+  if (!shift || !isLastDaysOfMonth(date)) return date
+  return firstOfNextMonth(date)
 }
