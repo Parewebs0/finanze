@@ -160,10 +160,11 @@ export interface Categorizer {
 const SEED_COMPILED = compileRules(SEED_RULES)
 
 const TRANSFER_NAME_HINT =
-  /transferencia inmediata de|transferencia\b|traspaso/i
+  /transferencia inmediata de|transferencia\b|traspaso|transfer\b/i
 
-const REAL_INCOME_HINT =
-  /nomina|abono\s*nomina|salary|salario|payroll|paga\s*extra|finiquito|bizum|interes|devoluc|reembol|reembolso/i
+/** Account holder's own name variants in PSD2-derived Spanish bank texts. */
+const SELF_NAME_HINT =
+  /\bj(esu|esus)\b|\bmolina\b|\bpiernas\b|jmolina|jesus\s*molina|j\.?\s*molina/i
 
 export function createCategorizer(config: ExpenseAnalysisConfig): Categorizer {
   const overrides = new Map<string, ExpenseCategoryId>()
@@ -183,29 +184,26 @@ export function createCategorizer(config: ExpenseAnalysisConfig): Categorizer {
       if (txType === TxType.INTEREST) return "interest"
       if (txType === TxType.FEE) return "fees"
 
-      // Self-transfers (TRANSFER_IN / TRANSFER_OUT between the user's own
-      // accounts) should not count as income or expense in the monthly
-      // summary. The PSD2-derived concept often contains the account
-      // holder's full name (e.g. "TRANSFERENCIA INMEDIATA DE JESUS
-      // MOLINA PIERNAS"), but a robust signal is simply: it is a
-      // transfer and nothing matches a real income/expense seed. Treat
-      // that as ownTransfer so it shows up in the resumen as savings
-      // neutral, not as fake income.
-      const isBankTransfer =
-        txType === TxType.TRANSFER_IN || txType === TxType.TRANSFER_OUT
-      const looksLikeOwnTransfer =
-        isBankTransfer &&
-        !REAL_INCOME_HINT.test(concept) &&
-        TRANSFER_NAME_HINT.test(concept)
-      if (looksLikeOwnTransfer) return "ownTransfer"
-
+      // Seed rules (Mercadona, Repsol, Bizum, nomina, etc.) take precedence:
+      // a real expense/income must not be downgraded to ownTransfer just
+      // because the bank text happens to mention "transferencia".
       const seeded = matchRules(SEED_COMPILED, concept, amount)
       if (seeded) return seeded
 
-      // TRANSFER_IN/OUT that didn't match a real income hint AND didn't
-      // look like a self-transfer (e.g. plain "TRANSFERENCIA RECIBIDA")
-      // should also be neutral, not counted as income.
-      if (isBankTransfer) return "ownTransfer"
+      // Self-transfers (TRANSFER_IN / TRANSFER_OUT between the user's own
+      // accounts) should not count as income or expense in the monthly
+      // summary. Signal: the PSD2-derived concept contains the account
+      // holder's name (Jesus / Molina / Piernas / J. Molina ...) together
+      // with a transfer word (transferencia, traspaso, transfer). Only
+      // own-name transfers are downgraded -- "TRANSFERENCIA A PROVEEDOR
+      // DE LUZ" with no name stays as a regular expense.
+      const isBankTransfer =
+        txType === TxType.TRANSFER_IN || txType === TxType.TRANSFER_OUT
+      const mentionsSelf =
+        TRANSFER_NAME_HINT.test(concept) && SELF_NAME_HINT.test(concept)
+      if (isBankTransfer && mentionsSelf) {
+        return "ownTransfer"
+      }
 
       return amount >= 0 ? "otherIncome" : "uncategorized"
     },
