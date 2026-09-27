@@ -91,6 +91,19 @@ export interface RangeAggregates {
   byCategory: CategoryAggregate[]
 }
 
+export interface SavingsBreakdown {
+  income: number
+  expenses: number
+  liquid: number
+  ownTransfer: number
+  invested: number
+  rate: number
+  incomeTxs: AnalysisTx[]
+  expenseTxs: AnalysisTx[]
+  ownTransferTxs: AnalysisTx[]
+  investedTxs: AnalysisTx[]
+}
+
 export interface DailyPoint {
   date: string
   income: number
