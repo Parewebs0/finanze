@@ -28,7 +28,6 @@ import {
   Repeat,
   ShoppingBag,
   ShoppingCart,
-  Trash2,
   TrendingUp,
   Users,
   UtensilsCrossed,
@@ -54,7 +53,6 @@ import {
   EXPENSE_CATEGORIES,
   RANGE_PRESETS,
   getCategory,
-  isValidPattern,
 } from "@/utils/expenseAnalysis"
 import type { ExpenseAnalysisState } from "@/hooks/useExpenseAnalysis"
 
@@ -545,147 +543,6 @@ export function BudgetsEditor({
   )
 }
 
-export function RulesEditor({
-  state,
-  compact = false,
-}: {
-  state: ExpenseAnalysisState
-  compact?: boolean
-}) {
-  const { t } = useI18n()
-  const label = useCategoryLabel()
-  const { configApi, config, money, uncategorizedCount } = state
-  const [pattern, setPattern] = useState("")
-  const [category, setCategory] = useState<string>("")
-  const [amount, setAmount] = useState("")
-  const invalid = pattern.trim() !== "" && !isValidPattern(pattern)
-
-  const add = async () => {
-    if (!category || !isValidPattern(pattern)) return
-    const parsed =
-      amount.trim() === "" ? null : Number(amount.replace(",", "."))
-    await configApi.addRule(
-      pattern.trim(),
-      category as ExpenseCategoryId,
-      parsed !== null && isFinite(parsed) ? parsed : null,
-    )
-    setPattern("")
-    setCategory("")
-    setAmount("")
-  }
-
-  return (
-    <div className="space-y-4">
-      <p className="text-xs text-muted-foreground">
-        {t.expenseAnalysis.rules.description}
-      </p>
-      {uncategorizedCount > 0 && (
-        <Badge
-          variant="outline"
-          className="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
-        >
-          {fill(t.expenseAnalysis.rules.uncategorized, {
-            n: uncategorizedCount,
-          })}
-        </Badge>
-      )}
-      <div
-        className={cn(
-          "grid gap-2",
-          compact ? "grid-cols-1" : "grid-cols-[2fr_1.5fr_1fr_auto]",
-        )}
-      >
-        <div>
-          <Input
-            aria-label={t.expenseAnalysis.rules.pattern}
-            placeholder={t.expenseAnalysis.rules.patternPlaceholder}
-            value={pattern}
-            onChange={e => setPattern(e.target.value)}
-            className={cn(invalid && "border-red-500", compact && "h-11")}
-          />
-          {invalid && (
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-              {t.expenseAnalysis.rules.invalidPattern}
-            </p>
-          )}
-        </div>
-        <select
-          aria-label={t.expenseAnalysis.rules.category}
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          className={cn(SELECT_CLASS, compact && "h-11")}
-        >
-          <option value="">{t.expenseAnalysis.rules.category}…</option>
-          {(["expense", "income", "transfer"] as const).map(group => (
-            <optgroup key={group} label={t.expenseAnalysis.groups[group]}>
-              {EXPENSE_CATEGORIES.filter(c => c.group === group).map(c => (
-                <option key={c.id} value={c.id}>
-                  {label(c.id)}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        <Input
-          type="text"
-          inputMode="decimal"
-          aria-label={t.expenseAnalysis.rules.exactAmount}
-          placeholder={t.expenseAnalysis.rules.exactAmount}
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-          className={cn(compact && "h-11")}
-        />
-        <Button
-          onClick={add}
-          disabled={!category || !pattern.trim() || invalid}
-          className={cn(compact && "h-11")}
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          {t.expenseAnalysis.rules.add}
-        </Button>
-      </div>
-      {config.rules.length === 0 ? (
-        <EmptyHint>{t.expenseAnalysis.rules.empty}</EmptyHint>
-      ) : (
-        <ul className="divide-y divide-border">
-          {config.rules.map((r, i) => (
-            <li
-              key={`${r.pattern}-${i}`}
-              className="flex items-center gap-3 py-2"
-            >
-              <CategoryIcon category={r.category} size="sm" />
-              <code className="min-w-0 flex-1 truncate rounded bg-muted px-1.5 py-0.5 text-xs">
-                {r.pattern}
-              </code>
-              {r.amount != null && (
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                  <Sensitive>
-                    {fill(t.expenseAnalysis.rules.amountBadge, {
-                      amount: money.format(Number(r.amount)),
-                    })}
-                  </Sensitive>
-                </Badge>
-              )}
-              <span className="hidden sm:inline text-xs text-muted-foreground">
-                {label(r.category)}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(compact ? "h-10 w-10" : "h-7 w-7")}
-                aria-label={t.expenseAnalysis.rules.remove}
-                onClick={() => configApi.removeRule(i)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
 export function MerchantsList({
   state,
   limit = 10,
@@ -742,7 +599,6 @@ export function MovementRow({
   const label = useCategoryLabel()
   const { money, configApi } = state
   const [editing, setEditing] = useState(false)
-  const [createRule, setCreateRule] = useState(false)
   const options = useMemo(() => EXPENSE_CATEGORIES, [])
 
   const excluded = tx.excluded === true
@@ -817,7 +673,7 @@ export function MovementRow({
               await configApi.recategorize(
                 tx,
                 e.target.value as ExpenseCategoryId,
-                createRule,
+                false,
               )
               setEditing(false)
             }}
@@ -829,18 +685,6 @@ export function MovementRow({
               </option>
             ))}
           </select>
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={createRule}
-              onChange={e => setCreateRule(e.target.checked)}
-              className={cn(
-                "rounded border-input",
-                touch ? "h-5 w-5" : "h-4 w-4",
-              )}
-            />
-            {t.expenseAnalysis.movements.createRule}
-          </label>
         </div>
       )}
     </li>
