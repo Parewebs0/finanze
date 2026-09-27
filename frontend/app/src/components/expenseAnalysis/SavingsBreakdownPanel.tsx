@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button"
 import { useModalBackHandler } from "@/hooks/useModalBackHandler"
 import type { ExpenseAnalysisState } from "@/hooks/useExpenseAnalysis"
 import type { AnalysisTx } from "@/types/expenseAnalysis"
+import { savingsBreakdown } from "@/utils/expenseAnalysis"
 import { useCategoryLabel } from "./shared"
 
 const COPY = {
@@ -76,7 +77,8 @@ export function SavingsBreakdownBody({
 }) {
   const { locale } = useI18n()
   const label = useCategoryLabel()
-  const { money, savings } = state
+  const { money, txs, effectiveRange } = state
+  const savings = savingsBreakdown(txs, effectiveRange)
   const copy = COPY[locale] ?? COPY["en-US"]
   const rows = [
     { key: "income", value: savings.income, txs: savings.incomeTxs },
