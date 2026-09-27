@@ -78,8 +78,8 @@ function SectionCard({
   children,
   className,
 }: {
-  title: string
-  icon: typeof Activity
+  title?: string
+  icon?: typeof Activity
   action?: React.ReactNode
   subtitle?: string
   children: React.ReactNode
@@ -87,18 +87,22 @@ function SectionCard({
 }) {
   return (
     <Card className={cn(PAGE_CARD_CLASS, className)}>
-      <CardHeader className="flex flex-row items-center justify-between pb-3 gap-2">
-        <div className="min-w-0 space-y-1">
-          <CardTitle className="text-lg font-bold flex items-center">
-            <Icon className="h-5 w-5 mr-2 text-primary shrink-0" />
-            {title}
-          </CardTitle>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
-          )}
-        </div>
-        {action}
-      </CardHeader>
+      {(title || action) && (
+        <CardHeader className="flex flex-row items-center justify-between pb-3 gap-2">
+          <div className="min-w-0 space-y-1">
+            {title && (
+              <CardTitle className="text-lg font-bold flex items-center">
+                {Icon && <Icon className="h-5 w-5 mr-2 text-primary shrink-0" />}
+                {title}
+              </CardTitle>
+            )}
+            {subtitle && (
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          {action}
+        </CardHeader>
+      )}
       <CardContent className="pt-0">{children}</CardContent>
     </Card>
   )
