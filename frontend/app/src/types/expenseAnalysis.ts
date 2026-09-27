@@ -36,22 +36,14 @@ export interface ExpenseCategory {
   id: ExpenseCategoryId
   group: CategoryGroup
   color: string
-  /** Counts as "needs" in the 50/30/20 rule */
   need?: boolean
 }
 
-/** Normalised transaction used by every analysis calculation. */
 export interface AnalysisTx {
   id: string
   ref: string
-  /** Bank calendar day, yyyy-MM-dd */
   date: string
-  /**
-   * Day used for totals and charts. Salary paid in the last 4 days of a
-   * month is shifted to the 1st of the next month (early payroll).
-   */
   analysisDate?: string
-  /** Signed amount in the display currency (+ income, - outflow) */
   amount: number
   originalAmount: number
   currency: string
@@ -61,7 +53,6 @@ export interface AnalysisTx {
   txType: TxType
   category: ExpenseCategoryId
   group: CategoryGroup
-  /** Marked by the user so it is omitted from totals and charts. */
   excluded?: boolean
 }
 
@@ -87,7 +78,6 @@ export interface CategoryAggregate {
   category: ExpenseCategoryId
   group: CategoryGroup
   color: string
-  /** Signed sum */
   total: number
   count: number
 }
@@ -95,11 +85,7 @@ export interface CategoryAggregate {
 export interface RangeAggregates {
   income: number
   expenses: number
-  /** income - expenses */
   savings: number
-  /** Outflows Jev labelled ownTransfer (ahorro líquido) */
-  ownTransfer: number
-  /** Outflows Jev labelled savingsInvestment */
   savingsInvestment: number
   avgDailySpend: number
   byCategory: CategoryAggregate[]
@@ -145,9 +131,7 @@ export interface Rule503020Result {
 export interface BudgetStatus {
   category: ExpenseCategoryId
   color: string
-  /** Monthly budget as configured */
   monthlyBudget: number
-  /** Budget for the selected period (monthly × months covered) */
   budget: number
   spent: number
   pct: number
@@ -172,16 +156,12 @@ export interface CategoryRanking {
   value: number
   count: number
   pct: number
-  /** % vs previous period, null when there's no previous data */
   delta: number | null
 }
-
-// ---- Persisted configuration (Settings.expenseAnalysis) ----
 
 export interface ExpenseCategoryRule {
   pattern: string
   category: ExpenseCategoryId
-  /** Signed exact amount (e.g. -50). When set the rule only matches it. */
   amount?: number | null
 }
 
@@ -199,6 +179,5 @@ export interface ExpenseAnalysisConfig {
   rules: ExpenseCategoryRule[]
   budgets: ExpenseBudget[]
   overrides: ExpenseCategoryOverride[]
-  /** Transaction ids omitted from totals and charts. */
   excluded: string[]
 }
