@@ -41,23 +41,11 @@ Reglas de desempate
 - Si no estoy seguro entre dos categorías, prefiero uncategorized a equivocarme.
 - Comercio español en mayúsculas (TRANSFERENCIA, COMPRA, ABONO) sigue siendo un movimiento normal: clasifica por el resto del concepto.
 
-Auto-transferencias (IMPORTANTE)
-- Cualquier movimiento con "TRANSFERENCIA", "TRASPASO", "TRANSFER" en el concepto cuyo destinatario u ordenante sea yo mismo = ownTransfer. No es ingreso ni gasto real: estoy moviendo dinero entre mis propias cuentas.
-- Mis nombres pueden aparecer de varias formas: regular para todos (case-insensitive y sin acentos):
-  - \bj(esu|esus)\b — Jesus, Jésús, JESUS, jesus
-  - \bmolina\b
-  - \bpiernas\b
-  - "jesus molina", "jesus molina piernas", "j. molina", "j molina piernas", "jmolina"
-- Si en el concepto aparece CUALQUIERA de esos nombres junto a "TRANSFER" / "TRASPASO" / "TRANSFERENCIA", es ownTransfer aunque el banco no diga "TRANSFERENCIA PROPIA".
-- Incluso si NO aparece mi nombre literal, una transferencia genérica entre cuentas propias (sin nómina, sin bizum, sin interés, sin devolución) también es ownTransfer, no otherIncome.
-- Este tipo de transferencias interneces NO deben contar en el income del mes ni en expenses. Salen del resumen mensual automáticamente como savings neutros.
-- Ejemplos que SÍ son ownTransfer:
-  - "TRANSFERENCIA INMEDIATA DE JESUS MOLINA PIERNAS, CONCEPTO ahorro" -> ownTransfer.
-  - "TRASPASO DE CTA. CORRIENTE A CTA. AHORRO" -> ownTransfer.
-  - "TRANSFERENCIA RECIBIDA" sin más contexto -> ownTransfer (defensa).
-- Ejemplos que NO son ownTransfer:
-  - "TRANSFERENCIA A PROVEEDOR DE LUZ" -> utilities (gasto real).
-  - "BIZUM ENVIADO A JUAN GARCIA" -> familyFriends (es otra persona, no yo).
+Auto-transferencias
+- Las transferencias entre tus propias cuentas también cuentan como income/expense del mes (otherIncome si entran, uncategorized si salen sin coincidir un seed rule). El usuario prefiere verlas reflejadas en el flujo mensual aunque sean movimientos internos.
+- Aun así, si el banco las etiqueta explícitamente como "TRANSFERENCIA PROPIA" o "TRASPASO ENTRE CUENTAS" entre tus cuentas (Santander <-> MyInvestor, Revolut, etc.) y aparece como transferencia de ahorro, puedes marcarlas como ownTransfer si cuadra con la cuenta destino. Ejemplos:
+  - "TRANSFERENCIA INMEDIATA DE JESUS MOLINA PIERNAS, CONCEPTO ahorro" hacia otra cuenta tuya -> otherIncome por defecto (el usuario prefiere ver el flujo).
+  - Hacia MyInvestor explícitamente -> savingsInvestment.
 `
 
 export function loadJevContext(): string {

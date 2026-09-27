@@ -159,13 +159,6 @@ export interface Categorizer {
 
 const SEED_COMPILED = compileRules(SEED_RULES)
 
-const TRANSFER_NAME_HINT =
-  /transferencia inmediata de|transferencia\b|traspaso|transfer\b/i
-
-/** Account holder's own name variants in PSD2-derived Spanish bank texts. */
-const SELF_NAME_HINT =
-  /\bj(esu|esus)\b|\bmolina\b|\bpiernas\b|jmolina|jesus\s*molina|j\.?\s*molina/i
-
 export function createCategorizer(config: ExpenseAnalysisConfig): Categorizer {
   const overrides = new Map<string, ExpenseCategoryId>()
   for (const o of config.overrides ?? []) {
@@ -184,26 +177,9 @@ export function createCategorizer(config: ExpenseAnalysisConfig): Categorizer {
       if (txType === TxType.INTEREST) return "interest"
       if (txType === TxType.FEE) return "fees"
 
-      // Seed rules (Mercadona, Repsol, Bizum, nomina, etc.) take precedence:
-      // a real expense/income must not be downgraded to ownTransfer just
-      // because the bank text happens to mention "transferencia".
+      // Seed rules (Mercadona, Repsol, Bizum, nomina, etc.) take precedence.
       const seeded = matchRules(SEED_COMPILED, concept, amount)
       if (seeded) return seeded
-
-      // Self-transfers (TRANSFER_IN / TRANSFER_OUT between the user's own
-      // accounts) should not count as income or expense in the monthly
-      // summary. Signal: the PSD2-derived concept contains the account
-      // holder's name (Jesus / Molina / Piernas / J. Molina ...) together
-      // with a transfer word (transferencia, traspaso, transfer). Only
-      // own-name transfers are downgraded -- "TRANSFERENCIA A PROVEEDOR
-      // DE LUZ" with no name stays as a regular expense.
-      const isBankTransfer =
-        txType === TxType.TRANSFER_IN || txType === TxType.TRANSFER_OUT
-      const mentionsSelf =
-        TRANSFER_NAME_HINT.test(concept) && SELF_NAME_HINT.test(concept)
-      if (isBankTransfer && mentionsSelf) {
-        return "ownTransfer"
-      }
 
       return amount >= 0 ? "otherIncome" : "uncategorized"
     },
