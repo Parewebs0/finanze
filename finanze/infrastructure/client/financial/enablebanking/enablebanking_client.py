@@ -117,6 +117,8 @@ class EnableBankingClient(ConnectableIntegration):
         return {
             "Authorization": f"Bearer {self._build_jwt()}",
             "Accept": "application/json",
+            "Psu-Ip-Address": "127.0.0.1",
+            "Psu-User-Agent": "Finanze/1.0",
         }
 
     async def _request(
@@ -154,8 +156,6 @@ class EnableBankingClient(ConnectableIntegration):
                 detail = _describe_error_body(body)
                 if not detail:
                     raise
-                # Keep status/response for callers, but surface Enable Banking's
-                # reason (e.g. REDIRECT_URI_NOT_ALLOWED) instead of a bare 400.
                 raise httpx.HTTPStatusError(
                     f"{e} | Enable Banking: {detail}",
                     request=e.request,
