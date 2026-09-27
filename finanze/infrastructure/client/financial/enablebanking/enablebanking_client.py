@@ -1,3 +1,4 @@
+import json as jsonlib
 import logging
 import time
 from typing import Optional
@@ -15,6 +16,37 @@ from domain.exception.exceptions import (
 )
 from domain.external_integration import ExternalIntegrationPayload
 from infrastructure.client.http.http_session import get_http_session
+
+
+_MAX_ERROR_DETAIL_LENGTH = 500
+
+
+def _describe_error_body(body: Optional[str]) -> Optional[str]:
+    """Human readable summary of an Enable Banking ErrorResponse
+    ({"message", "code", "error", "detail"}); None if nothing useful."""
+    if not body:
+        return None
+    try:
+        data = jsonlib.loads(body)
+    except ValueError:
+        return body.strip()[:_MAX_ERROR_DETAIL_LENGTH] or None
+    if not isinstance(data, dict):
+        return str(data)[:_MAX_ERROR_DETAIL_LENGTH]
+
+    parts = []
+    error_code = data.get("error")
+    if error_code:
+        parts.append(str(error_code))
+    message = data.get("message")
+    if message:
+        parts.append(str(message))
+    detail = data.get("detail")
+    if detail:
+        parts.append(
+            detail if isinstance(detail, str) else jsonlib.dumps(detail, default=str)
+        )
+    summary = " - ".join(parts)
+    return summary[:_MAX_ERROR_DETAIL_LENGTH] or None
 
 
 class EnableBankingClient(ConnectableIntegration):
@@ -116,7 +148,19 @@ class EnableBankingClient(ConnectableIntegration):
             self._log.error(
                 "Error calling Enable Banking %s: %s %s", url, response.status, body
             )
-            response.raise_for_status()
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                detail = _describe_error_body(body)
+                if not detail:
+                    raise
+                # Keep status/response for callers, but surface Enable Banking's
+                # reason (e.g. REDIRECT_URI_NOT_ALLOWED) instead of a bare 400.
+                raise httpx.HTTPStatusError(
+                    f"{e} | Enable Banking: {detail}",
+                    request=e.request,
+                    response=e.response,
+                ) from e
 
         return await response.json()
 
