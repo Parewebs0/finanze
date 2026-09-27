@@ -200,7 +200,7 @@ class TradeRepublicFetcher(FinancialEntityFetcher):
         if two_factor:
             process_id, code = two_factor.process_id, two_factor.code
 
-        use_v2 = (login_params.feature_flags or {}).get("TR_V2_AUTH_API") == FFStatus.ON
+        use_v2 = True
 
         if process_id and not code:
             return await self._client.complete_login(process_id, waf_token)
