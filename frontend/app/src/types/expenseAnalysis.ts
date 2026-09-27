@@ -97,7 +97,9 @@ export interface RangeAggregates {
   expenses: number
   /** income - expenses */
   savings: number
-  /** Money moved to own accounts / investments (transfer group outflows) */
+  /** Outflows Jev labelled ownTransfer (ahorro líquido) */
+  ownTransfer: number
+  /** Outflows Jev labelled savingsInvestment */
   savingsInvestment: number
   avgDailySpend: number
   byCategory: CategoryAggregate[]
