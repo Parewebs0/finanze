@@ -7,6 +7,39 @@ import type { ExpenseAnalysisState } from "@/hooks/useExpenseAnalysis"
 import type { AnalysisTx } from "@/types/expenseAnalysis"
 import { useCategoryLabel } from "./shared"
 
+const COPY = {
+  "es-ES": {
+    title: "Ahorro e inversión",
+    formula:
+      "Ingresos − gastos − traspasos = líquido en la cuenta. La tasa es (líquido + ahorro + inversión) / ingresos.",
+    rate: "Tasa",
+    allocated: "Ahorrado + invertido + líquido",
+    income: "Ingresos",
+    expenses: "Gastos",
+    liquid: "Líquido que queda en la cuenta",
+  },
+  "en-US": {
+    title: "Savings & investing",
+    formula:
+      "Income − expenses − transfers = cash left in the account. Rate is (cash + own transfers + investments) / income.",
+    rate: "Rate",
+    allocated: "Saved + invested + cash left",
+    income: "Income",
+    expenses: "Expenses",
+    liquid: "Cash left in the account",
+  },
+  "it-IT": {
+    title: "Risparmio e investimenti",
+    formula:
+      "Entrate − spese − trasferimenti = liquidità sul conto. Il tasso è (liquidità + trasferimenti + investimenti) / entrate.",
+    rate: "Tasso",
+    allocated: "Risparmiato + investito + liquidità",
+    income: "Entrate",
+    expenses: "Spese",
+    liquid: "Liquidità rimasta sul conto",
+  },
+} as const
+
 function TxLines({
   txs,
   money,
@@ -41,10 +74,10 @@ export function SavingsBreakdownBody({
 }: {
   state: ExpenseAnalysisState
 }) {
-  const { t } = useI18n()
+  const { locale } = useI18n()
   const label = useCategoryLabel()
   const { money, savings } = state
-  const copy = t.expenseAnalysis.savingsAndInvesting
+  const copy = COPY[locale] ?? COPY["en-US"]
   const rows = [
     { key: "income", value: savings.income, txs: savings.incomeTxs },
     { key: "expenses", value: savings.expenses, txs: savings.expenseTxs },
@@ -118,7 +151,8 @@ export function SavingsBreakdownDialog({
   onClose: () => void
   state: ExpenseAnalysisState
 }) {
-  const { t } = useI18n()
+  const { locale } = useI18n()
+  const copy = COPY[locale] ?? COPY["en-US"]
   useModalBackHandler(open, onClose)
   if (!open) return null
   return (
@@ -127,9 +161,7 @@ export function SavingsBreakdownDialog({
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
             <PiggyBank className="h-5 w-5 text-violet-500" />
-            <h2 className="text-base font-semibold">
-              {t.expenseAnalysis.savingsAndInvesting.title}
-            </h2>
+            <h2 className="text-base font-semibold">{copy.title}</h2>
           </div>
           <Button
             variant="ghost"
