@@ -44,8 +44,13 @@ export interface ExpenseCategory {
 export interface AnalysisTx {
   id: string
   ref: string
-  /** Local calendar day, yyyy-MM-dd */
+  /** Bank calendar day, yyyy-MM-dd */
   date: string
+  /**
+   * Day used for totals and charts. Salary paid in the last 4 days of a
+   * month is shifted to the 1st of the next month (early payroll).
+   */
+  analysisDate: string
   /** Signed amount in the display currency (+ income, - outflow) */
   amount: number
   originalAmount: number
@@ -66,7 +71,13 @@ export interface DateRange {
 }
 
 export type RangePreset =
-  "month" | "prevMonth" | "3m" | "6m" | "year" | "all" | "custom"
+  | "month"
+  | "prevMonth"
+  | "3m"
+  | "6m"
+  | "year"
+  | "all"
+  | "custom"
 
 export interface PresetRange extends DateRange {
   preset: RangePreset

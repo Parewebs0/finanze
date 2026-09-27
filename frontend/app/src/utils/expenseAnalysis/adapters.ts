@@ -5,6 +5,7 @@ import type { AnalysisTx } from "@/types/expenseAnalysis"
 import { convertCurrency } from "@/utils/financialDataUtils"
 import type { Categorizer } from "./categorization"
 import { getCategory } from "./categories"
+import { analysisDateFor } from "./payroll"
 
 /**
  * Finanze → analysis adapter.
@@ -58,10 +59,12 @@ export function toAnalysisTx(
     amount: rounded,
     txType: tx.type,
   })
+  const date = txDay(tx.date)
   return {
     id: tx.id,
     ref: tx.ref,
-    date: txDay(tx.date),
+    date,
+    analysisDate: analysisDateFor(date, category),
     amount: rounded,
     originalAmount: original,
     currency,
