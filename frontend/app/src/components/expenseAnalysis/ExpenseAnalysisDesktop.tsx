@@ -62,7 +62,6 @@ import {
   RangePresetSegmented,
   RecurringList,
   Rule503020Bars,
-  RulesEditor,
   fill,
   useCategoryLabel,
 } from "./shared"
@@ -444,16 +443,7 @@ export function ExpenseAnalysisDesktop({ state }: Props) {
             </Button>
           </div>
         </Card>
-        <SectionCard
-          title={t.expenseAnalysis.rules.title}
-          icon={WandSparkles}
-          subtitle={t.expenseAnalysis.rules.subtitle}
-        >
-          <RulesEditor state={state} />
-          <div className="mt-6 border-t pt-6">
-            <CategorizerCard state={state} />
-          </div>
-        </SectionCard>
+        <CategorizerCard state={state} />
       </div>
     )
   }
@@ -1027,11 +1017,11 @@ export function ExpenseAnalysisDesktop({ state }: Props) {
           <motion.div variants={fadeListItem}>
             <SectionCard
               title={t.expenseAnalysis.rules.title}
-              icon={WandSparkles}
+              icon={Target}
               subtitle={t.expenseAnalysis.rules.subtitle}
             >
-              <RulesEditor state={state} />
-              <div className="mt-6 border-t pt-6">
+            <CategorizerCard state={state} />
+<div className="mt-6 border-t pt-6">
                 <CategorizerCard state={state} />
               </div>
             </SectionCard>

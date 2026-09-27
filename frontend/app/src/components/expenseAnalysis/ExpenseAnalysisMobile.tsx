@@ -19,7 +19,6 @@ import {
   TrendingDown,
   TrendingUp,
   Wallet,
-  WandSparkles,
   X,
 } from "lucide-react"
 import {
@@ -62,7 +61,6 @@ import {
   ProgressBar,
   RecurringList,
   Rule503020Bars,
-  RulesEditor,
   fill,
   useCategoryLabel,
 } from "./shared"
@@ -431,16 +429,7 @@ export function ExpenseAnalysisMobile({ state }: Props) {
             </Button>
           </div>
         </Card>
-        <MobileSection
-          title={t.expenseAnalysis.rules.title}
-          icon={WandSparkles}
-          subtitle={t.expenseAnalysis.rules.subtitle}
-        >
-          <RulesEditor state={state} compact />
-          <div className="mt-6 border-t pt-6">
-            <CategorizerCard state={state} />
-          </div>
-        </MobileSection>
+        <CategorizerCard state={state} />
       </div>
     )
   }
@@ -858,11 +847,11 @@ export function ExpenseAnalysisMobile({ state }: Props) {
                 </MobileSection>
                 <MobileSection
                   title={t.expenseAnalysis.rules.title}
-                  icon={WandSparkles}
+                  icon={Target}
                   subtitle={t.expenseAnalysis.rules.subtitle}
                 >
-                  <RulesEditor state={state} compact />
-                  <div className="mt-6 border-t pt-6">
+            <CategorizerCard state={state} />
+<div className="mt-6 border-t pt-6">
                     <CategorizerCard state={state} />
                   </div>
                 </MobileSection>
