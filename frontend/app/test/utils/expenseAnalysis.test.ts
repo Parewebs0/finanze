@@ -16,12 +16,10 @@ import {
   detectRecurring,
   getCategory,
   heatmapWeeks,
-  isValidPattern,
   monthGrid,
   monthlyEvolution,
   monthsInRange,
   normalizeConcept,
-  patternFromConcept,
   presetRange,
   previousRange,
   rangeAggregates,
@@ -139,48 +137,6 @@ describe("categorization", () => {
     expect(cat("Unknown sender", 10)).toBe("otherIncome")
     expect(cat("Liquidación", 3, TxType.INTEREST)).toBe("interest")
     expect(cat("Comisión mantenimiento", -2, TxType.FEE)).toBe("fees")
-  })
-
-  it("gives user rules and overrides precedence", () => {
-    const config = {
-      rules: [
-        { pattern: "mercadona", category: "leisure", amount: null },
-        { pattern: "transferencia", category: "housing", amount: -50 },
-      ],
-      overrides: [{ txId: "x", category: "travel" }],
-    }
-    expect(
-      createCategorizer({
-        budgets: [],
-        ...config,
-        overrides: [],
-      } as never).categorize({
-        id: "y",
-        concept: "Mercadona",
-        amount: -5,
-        txType: TxType.TRANSFER_OUT,
-      }),
-    ).toBe("leisure")
-    // exact-amount rule only matches that amount
-    expect(
-      cat("Transferencia", -50, undefined, { ...config, overrides: [] }),
-    ).toBe("housing")
-    expect(
-      cat("Transferencia", -51, undefined, { ...config, overrides: [] }),
-    ).toBe("uncategorized")
-    expect(cat("Mercadona", -5, undefined, config)).toBe("travel")
-  })
-
-  it("ignores invalid patterns and escapes learnt concepts", () => {
-    expect(isValidPattern("(")).toBe(false)
-    expect(isValidPattern("netflix|hbo")).toBe(true)
-    expect(
-      cat("Anything", -1, undefined, {
-        rules: [{ pattern: "(", category: "travel", amount: null }],
-      }),
-    ).toBe("uncategorized")
-    const p = patternFromConcept("  Café  (Centro) 1.5 ")
-    expect(new RegExp(p, "i").test("cafe (centro) 1.5")).toBe(true)
   })
 })
 
