@@ -39,18 +39,37 @@ class CategorizerAssignment:
     confidence: Optional[float] = None
 
 
+HOUSEHOLD_CONTEXT = {
+    "locale": "es-ES",
+    "country": "Spain",
+    "kind": "personal household banking",
+    "notes": (
+        "Movements come from Spanish banks (Santander and others). "
+        "Concepts are short, often uppercase and abbreviated. "
+        "NÓMINA / ABONO NOMINA / SALARIO on an inflow is the monthly paycheck. "
+        "Spanish employers often pay that paycheck on the last business days "
+        "of the previous month. Bizum RECIBIDO is money received from a person; "
+        "Bizum ENVIADO is money sent. Transfers between the user's own accounts "
+        "are ownTransfer, not spending."
+    ),
+}
+
+
 # Choice criteria: each option stands alone, with direction so Jev does not
 # put an inflow in an expense bucket (or the reverse).
 CATEGORY_CRITERIA: dict[str, str] = {
     "salary": (
-        "Inflow only. Regular payroll or wages from an employer "
-        "(nómina, salary, payroll). Not a refund, transfer or one-off extra."
+        "Inflow only. Regular employer paycheck. Spanish bank texts: "
+        "NÓMINA, NOMINA, ABONO NOMINA, SALARIO, PAYROLL, PAGA. "
+        "Not a refund, not a transfer between own accounts, not a one-off extra."
     ),
     "otherIncome": (
         "Inflow only. Money coming in that is not salary, Bizum received, "
         "or bank interest."
     ),
-    "bizumReceived": "Inflow only. A Bizum received from someone else.",
+    "bizumReceived": (
+        "Inflow only. A Bizum received from someone else (BIZUM RECIBIDO)."
+    ),
     "interest": "Inflow only. Bank interest credited to the account.",
     "housing": "Outflow only. Rent, mortgage or community fees for a home.",
     "utilities": (
@@ -84,7 +103,7 @@ CATEGORY_CRITERIA: dict[str, str] = {
         "or Decathlon. Not groceries or restaurants."
     ),
     "familyFriends": (
-        "Usually outflow. Money sent to family or friends, including Bizum sent. "
+        "Usually outflow. Money sent to family or friends, including Bizum enviado. "
         "Received Bizum is bizumReceived."
     ),
     "sports": "Outflow only. Gym, sports club, padel or climbing.",
