@@ -181,16 +181,11 @@ export function createCategorizer(config: ExpenseAnalysisConfig): Categorizer {
       const seeded = matchRules(SEED_COMPILED, concept, amount)
       if (seeded) return seeded
 
-      // Safety net: any TRANSFER_IN whose concept carries the account
-      // holder's name is treated as otherIncome so it always shows up in
-      // the monthly income / Daily Cash Flow. This bypasses any user rule
-      // or override that the user might have left behind while the auto-
-      // transfer heuristic was off -- the user has been explicit that
-      // every inflow to his own account must appear as income.
-      if (
-        txType === TxType.TRANSFER_IN &&
-        /\bj(esu|esus)\b|\bmolina\b|\bpiernas\b/i.test(concept)
-      ) {
+      // Simple, no exceptions: any TRANSFER_IN with positive amount is
+      // income and must show in the monthly income / Daily Cash Flow.
+      // Outflows (TRANSFER_OUT) keep falling through to the uncategorized
+      // bucket so user seed rules and overrides still apply to them.
+      if (txType === TxType.TRANSFER_IN && amount > 0) {
         return "otherIncome"
       }
 
