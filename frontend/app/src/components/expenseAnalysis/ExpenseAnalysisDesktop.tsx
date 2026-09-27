@@ -1015,15 +1015,8 @@ export function ExpenseAnalysisDesktop({ state }: Props) {
           </motion.div>
 
           <motion.div variants={fadeListItem}>
-            <SectionCard
-              title={t.expenseAnalysis.rules.title}
-              icon={Target}
-              subtitle={t.expenseAnalysis.rules.subtitle}
-            >
-            <CategorizerCard state={state} />
-<div className="mt-6 border-t pt-6">
-                <CategorizerCard state={state} />
-              </div>
+            <SectionCard>
+              <CategorizerCard state={state} />
             </SectionCard>
           </motion.div>
         </>
