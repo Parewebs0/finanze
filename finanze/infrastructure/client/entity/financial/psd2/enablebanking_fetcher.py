@@ -41,6 +41,7 @@ from domain.global_position import (
 )
 from domain.transactions import AccountTx, Transactions
 from infrastructure.client.entity.financial.psd2.psd2_transactions import (
+    ENABLEBANKING_MAX_HISTORY_DAYS,
     MAX_PAGES_PER_ACCOUNT,
     history_start,
     map_enablebanking_tx,
@@ -253,7 +254,14 @@ class EnableBankingFetcher(ExternalEntityFetcher):
     ) -> Transactions:
         payload = request.external_entity.payload or {}
         raw_accounts = payload.get("accounts", [])
-        date_from = history_start(registered_refs)
+        date_from = history_start(
+            registered_refs, max_days=ENABLEBANKING_MAX_HISTORY_DAYS
+        )
+        self._log.info(
+            "PSD2 transactions: %s accounts, date_from=%s",
+            len(raw_accounts),
+            date_from,
+        )
 
         account_txs: list[AccountTx] = []
         seen: set[str] = set(registered_refs)
@@ -271,14 +279,24 @@ class EnableBankingFetcher(ExternalEntityFetcher):
                     )
                 except httpx.HTTPStatusError as e:
                     code = e.response.status_code
-                    if code in (401, 403, 410):
+                    self._log.error(
+                        "Enable Banking transactions failed for %s: %s %s",
+                        uid,
+                        code,
+                        e,
+                    )
+                    if code == 410:
                         raise ExternalEntityLinkExpired() from e
                     elif code == 429:
                         raise TooManyRequests() from e
                     else:
                         raise ExternalEntityFailed() from e
 
-                for raw_tx in page.get("transactions", []) or []:
+                raw_txs = page.get("transactions", []) or []
+                self._log.info(
+                    "Enable Banking account %s page: %s raw txs", uid, len(raw_txs)
+                )
+                for raw_tx in raw_txs:
                     tx = map_enablebanking_tx(raw_tx, uid, request.entity)
                     if tx is None or tx.ref in seen:
                         continue
