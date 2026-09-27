@@ -40,13 +40,16 @@ def key_hint(api_key: str) -> str:
 
 
 def choice_question(payment_id: str) -> dict[str, Any]:
+    path = f"payments.{payment_id}"
     return {
         "type": "choice",
         "instructions": (
-            "Choose the category of the payment whose id is "
-            f"{payment_id}. A negative amount is money leaving the account. "
-            "A positive amount is money coming in. The concept is the bank "
-            "description and is often in Spanish."
+            f"Choose the category of `{path}`. "
+            f"Use `{path}.concept` (bank description, often Spanish), "
+            f"`{path}.amount` (negative leaves the account, positive comes in), "
+            f"`{path}.date` and `{path}.entity`. "
+            "Payroll and wages are salary. Transfers between the user's own "
+            "accounts are ownTransfer. If none fits, use uncategorized."
         ),
         "criteria": CATEGORY_CRITERIA,
     }
@@ -100,17 +103,18 @@ class JevCategorizerClient:
         assigned: list[CategorizerAssignment] = []
         for start in range(0, len(payments), BATCH_SIZE):
             batch = payments[start : start + BATCH_SIZE]
-            state = [
-                {
-                    "id": payment.id,
-                    "date": payment.date,
-                    "concept": payment.concept[:300],
-                    "amount": payment.amount,
-                    "currency": payment.currency,
-                    "entity": payment.entity_name,
+            state = {
+                "payments": {
+                    payment.id: {
+                        "date": payment.date,
+                        "concept": payment.concept[:300],
+                        "amount": payment.amount,
+                        "currency": payment.currency,
+                        "entity": payment.entity_name,
+                    }
+                    for payment in batch
                 }
-                for payment in batch
-            ]
+            }
             questions = {payment.id: choice_question(payment.id) for payment in batch}
             body = await self._post(connection, state, questions)
             answers = body.get("answers")
