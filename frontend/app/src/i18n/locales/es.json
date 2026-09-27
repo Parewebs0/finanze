@@ -3414,6 +3414,27 @@
     "title": "Análisis de gastos",
     "navLabel": "Análisis",
     "refresh": "Actualizar",
+    "source": {
+      "placeholder": "Selecciona un banco"
+    },
+    "categorizer": {
+      "title": "Categorizar con Jev",
+      "description": "Conecta Jev desde la app. La clave se queda en este perfil local. OpenRouter usa el modelo ~typesafe/jev-latest. Directo usa Jev en api.typesafe.ai.",
+      "openrouter": "OpenRouter",
+      "direct": "Jev directo",
+      "apiKey": "Clave API",
+      "openrouterHint": "Clave de OpenRouter",
+      "directHint": "Clave de TypeSafe",
+      "connect": "Conectar",
+      "checking": "Comprobando la clave…",
+      "connected": "Jev está conectado",
+      "disconnect": "Desconectar",
+      "using": "{provider} · {hint}",
+      "onlyUncategorized": "Solo movimientos sin categoría de este periodo",
+      "recategorize": "Recategorizar",
+      "working": "Categorizando…",
+      "done": "Actualizados {n} movimientos"
+    },
     "presets": {
       "month": "Este mes",
       "prevMonth": "Mes anterior",
@@ -3503,6 +3524,9 @@
       "openInTransactions": "Abrir en Transacciones",
       "close": "Cerrar",
       "changeCategory": "Cambiar categoría",
+      "exclude": "No contar este pago",
+      "include": "Volver a contar este pago",
+      "excluded": "Excluido del análisis",
       "createRule": "Crear también una regla para movimientos similares",
       "showAll": "Ver todos ({n})"
     },
@@ -3530,7 +3554,9 @@
     "empty": {
       "title": "Todavía no hay movimientos bancarios",
       "description": "Conecta un banco (p. ej. Santander mediante Enable Banking o GoCardless) desde Integraciones y actualiza sus datos para ver aquí el análisis de tus gastos.",
-      "goToIntegrations": "Ir a Integraciones"
+      "goToIntegrations": "Ir a Integraciones",
+      "forSourceTitle": "Sin movimientos de este banco",
+      "forSourceDescription": "Todavía no hay transacciones de cuenta de {name}. Actualízalas desde Integraciones para ver el análisis de este banco."
     },
     "noExpenses": "Sin gastos en el periodo.",
     "noData": "Sin movimientos en el rango.",

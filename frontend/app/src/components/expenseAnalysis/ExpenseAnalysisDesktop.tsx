@@ -67,6 +67,8 @@ import {
   fill,
   useCategoryLabel,
 } from "./shared"
+import { AnalysisEntitySelector } from "./AnalysisEntitySelector"
+import { CategorizerCard } from "./CategorizerCard"
 
 type Props = { state: ExpenseAnalysisState }
 
@@ -182,7 +184,10 @@ function MovementsPanel({
 }) {
   const { t } = useI18n()
   const { selectionTxs, money, brush, openTransactions } = state
-  const total = selectionTxs.reduce((s, tx) => s + tx.amount, 0)
+  const total = selectionTxs.reduce(
+    (sum, tx) => (tx.excluded ? sum : sum + tx.amount),
+    0,
+  )
   return (
     <div className="mt-4 rounded-lg border bg-muted/30 p-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -363,6 +368,8 @@ export function ExpenseAnalysisDesktop({ state }: Props) {
     loading,
     error,
     hasAnyTransactions,
+    hasConnectedSources,
+    selectedEntity,
   } = state
 
   const [dragStart, setDragStart] = useState<string | null>(null)
@@ -383,9 +390,12 @@ export function ExpenseAnalysisDesktop({ state }: Props) {
   const header = (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold flex-shrink-0 whitespace-nowrap">
-          {t.expenseAnalysis.title}
-        </h1>
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
+          <h1 className="text-3xl font-bold flex-shrink-0 whitespace-nowrap">
+            {t.expenseAnalysis.title}
+          </h1>
+          <AnalysisEntitySelector state={state} className="w-64" />
+        </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <RangePresetSegmented
             value={range.preset}
@@ -415,14 +425,21 @@ export function ExpenseAnalysisDesktop({ state }: Props) {
     return (
       <div className="space-y-6">
         {header}
+        <CategorizerCard state={state} />
         <Card className="p-6">
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <Wallet className="h-10 w-10 mb-3 text-muted-foreground opacity-60" />
             <h2 className="text-lg font-semibold">
-              {t.expenseAnalysis.empty.title}
+              {hasConnectedSources
+                ? t.expenseAnalysis.empty.forSourceTitle
+                : t.expenseAnalysis.empty.title}
             </h2>
             <p className="mt-1 max-w-lg text-sm text-muted-foreground">
-              {t.expenseAnalysis.empty.description}
+              {hasConnectedSources
+                ? fill(t.expenseAnalysis.empty.forSourceDescription, {
+                    name: selectedEntity?.name ?? "",
+                  })
+                : t.expenseAnalysis.empty.description}
             </p>
             <Button className="mt-4" onClick={() => navigate("/entities")}>
               {t.expenseAnalysis.empty.goToIntegrations}
@@ -441,6 +458,9 @@ export function ExpenseAnalysisDesktop({ state }: Props) {
       className="space-y-6"
     >
       <motion.div variants={fadeListItem}>{header}</motion.div>
+      <motion.div variants={fadeListItem}>
+        <CategorizerCard state={state} />
+      </motion.div>
 
       {(brush || selectedCategory) && (
         <motion.div variants={fadeListItem}>

@@ -154,26 +154,40 @@ const defaultAutoRefresh: AutoRefresh = {
   entities: [],
 }
 
+/** Globals are optional. An empty object fails server validation because spreadsheetId is required once the object is present. */
+function sheetGlobals<T extends { spreadsheetId?: string }>(
+  base?: T,
+  incoming?: T,
+): T | undefined {
+  const globals = { ...(base ?? {}), ...(incoming ?? {}) } as T
+  if (!globals.spreadsheetId?.trim()) return undefined
+  return globals
+}
+
 const mergeSettingsWithDefaults = (
   incoming?: Partial<AppSettings>,
 ): AppSettings => {
+  const exportGlobals = sheetGlobals(
+    defaultSettings.export?.sheets?.globals,
+    incoming?.export?.sheets?.globals,
+  )
   const mergedExportSheets = {
     ...(defaultSettings.export?.sheets ?? {}),
     ...(incoming?.export?.sheets ?? {}),
-    globals: {
-      ...(defaultSettings.export?.sheets?.globals ?? {}),
-      ...(incoming?.export?.sheets?.globals ?? {}),
-    },
+    ...(exportGlobals ? { globals: exportGlobals } : {}),
   }
+  if (!exportGlobals) delete mergedExportSheets.globals
 
+  const importingGlobals = sheetGlobals(
+    defaultSettings.importing?.sheets?.globals,
+    incoming?.importing?.sheets?.globals,
+  )
   const mergedImportingSheets = {
     ...(defaultSettings.importing?.sheets ?? {}),
     ...(incoming?.importing?.sheets ?? {}),
-    globals: {
-      ...(defaultSettings.importing?.sheets?.globals ?? {}),
-      ...(incoming?.importing?.sheets?.globals ?? {}),
-    },
+    ...(importingGlobals ? { globals: importingGlobals } : {}),
   }
+  if (!importingGlobals) delete mergedImportingSheets.globals
 
   const mergedAssets = {
     ...defaultSettings.assets,
@@ -396,8 +410,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const saveSettingsData = useCallback(
     async (settingsData: AppSettings, options?: { silent?: boolean }) => {
       try {
-        await saveSettings(settingsData)
-        setSettings(mergeSettingsWithDefaults(settingsData))
+        const payload = mergeSettingsWithDefaults(settingsData)
+        await saveSettings(payload)
+        setSettings(payload)
         if (!options?.silent) {
           showToast(t.settings.saveSuccess, "success")
         }

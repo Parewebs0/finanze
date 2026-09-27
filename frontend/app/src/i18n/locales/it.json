@@ -3396,6 +3396,27 @@
     "title": "Analisi delle spese",
     "navLabel": "Analisi",
     "refresh": "Aggiorna",
+    "source": {
+      "placeholder": "Seleziona una banca"
+    },
+    "categorizer": {
+      "title": "Categorizza con Jev",
+      "description": "Collega Jev dall'app. La chiave resta in questo profilo locale. OpenRouter usa il modello ~typesafe/jev-latest. Diretto usa Jev su api.typesafe.ai.",
+      "openrouter": "OpenRouter",
+      "direct": "Jev diretto",
+      "apiKey": "Chiave API",
+      "openrouterHint": "Chiave OpenRouter",
+      "directHint": "Chiave TypeSafe",
+      "connect": "Collega",
+      "checking": "Verifica della chiave…",
+      "connected": "Jev è collegato",
+      "disconnect": "Scollega",
+      "using": "{provider} · {hint}",
+      "onlyUncategorized": "Solo i movimenti senza categoria di questo periodo",
+      "recategorize": "Ricategorizza",
+      "working": "Categorizzazione…",
+      "done": "Aggiornati {n} movimenti"
+    },
     "presets": {
       "month": "Questo mese",
       "prevMonth": "Mese scorso",
@@ -3485,6 +3506,9 @@
       "openInTransactions": "Apri in Transazioni",
       "close": "Chiudi",
       "changeCategory": "Cambia categoria",
+      "exclude": "Non contare questo pagamento",
+      "include": "Conta di nuovo questo pagamento",
+      "excluded": "Escluso dall'analisi",
       "createRule": "Crea anche una regola per movimenti simili",
       "showAll": "Mostra tutti ({n})"
     },
@@ -3512,7 +3536,9 @@
     "empty": {
       "title": "Ancora nessun movimento bancario",
       "description": "Collega una banca (es. Santander tramite Enable Banking o GoCardless) da Integrazioni e aggiorna i dati per vedere qui l'analisi delle tue spese.",
-      "goToIntegrations": "Vai a Integrazioni"
+      "goToIntegrations": "Vai a Integrazioni",
+      "forSourceTitle": "Nessun movimento per questa banca",
+      "forSourceDescription": "Non ci sono ancora transazioni di conto per {name}. Aggiornale da Integrazioni per vedere l'analisi di questa banca."
     },
     "noExpenses": "Nessuna spesa nel periodo.",
     "noData": "Nessun movimento nell'intervallo.",

@@ -3,6 +3,7 @@ from domain.use_cases.add_manual_transaction import AddManualTransaction
 from domain.use_cases.cancel_entity_login import CancelEntityLogin
 from domain.use_cases.calculate_loan import CalculateLoan
 from domain.use_cases.calculate_savings import CalculateSavings
+from application.use_cases.categorizer import CategorizerService
 from domain.use_cases.change_user_password import ChangeUserPassword
 from domain.use_cases.complete_external_entity_connection import (
     CompleteExternalEntityConnection,
@@ -105,6 +106,12 @@ from infrastructure.controller.routes.add_manual_transaction import (
 from infrastructure.controller.routes.cancel_entity_login import cancel_entity_login
 from infrastructure.controller.routes.calculate_loan import calculate_loan
 from infrastructure.controller.routes.calculate_savings import calculate_savings
+from infrastructure.controller.routes.categorizer import (
+    categorize_payments,
+    connect_categorizer,
+    disconnect_categorizer,
+    get_categorizer,
+)
 from infrastructure.controller.routes.change_user_password import change_user_password
 from infrastructure.controller.routes.complete_external_entity_connection import (
     complete_external_entity_connection,
@@ -321,6 +328,7 @@ async def register_routes(
     get_euribor_rates_uc: GetEuriborRates,
     get_telemetry_consent_uc: GetTelemetryConsent,
     update_telemetry_consent_uc: UpdateTelemetryConsent,
+    categorizer_service: CategorizerService,
 ):
     @app.route("/api/v1/login", methods=["POST"])
     async def user_login_route():
@@ -685,6 +693,22 @@ async def register_routes(
     @app.route("/api/v1/telemetry/consent", methods=["POST"])
     async def update_telemetry_consent_route():
         return await update_telemetry_consent(update_telemetry_consent_uc)
+
+    @app.route("/api/v1/analysis/categorizer", methods=["GET"])
+    async def get_categorizer_route():
+        return await get_categorizer(categorizer_service)
+
+    @app.route("/api/v1/analysis/categorizer", methods=["PUT"])
+    async def connect_categorizer_route():
+        return await connect_categorizer(categorizer_service)
+
+    @app.route("/api/v1/analysis/categorizer", methods=["DELETE"])
+    async def disconnect_categorizer_route():
+        return await disconnect_categorizer(categorizer_service)
+
+    @app.route("/api/v1/analysis/categorize", methods=["POST"])
+    async def categorize_payments_route():
+        return await categorize_payments(categorizer_service)
 
     @app.route("/oauth/callback", methods=["GET"])
     async def oauth_callback_route():

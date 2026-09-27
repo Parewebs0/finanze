@@ -207,6 +207,7 @@ class TestExpenseAnalysisConfig:
             ],
             budgets=[ExpenseBudget(category="groceries", amount=300)],
             overrides=[ExpenseCategoryOverride(txId="tx-1", category="travel")],
+            excluded=["tx-9"],
         )
         await loader.save(settings)
 
@@ -219,6 +220,7 @@ class TestExpenseAnalysisConfig:
         assert rules[1].amount == -50
         assert loaded.expenseAnalysis.budgets[0].amount == 300
         assert loaded.expenseAnalysis.overrides[0].txId == "tx-1"
+        assert loaded.expenseAnalysis.excluded == ["tx-9"]
 
     @pytest.mark.asyncio
     async def test_defaults_to_empty_config(self, tmp_path):

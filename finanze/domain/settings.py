@@ -191,6 +191,8 @@ class ExpenseAnalysisConfig:
     rules: list[ExpenseCategoryRule] = field(default_factory=list)
     budgets: list[ExpenseBudget] = field(default_factory=list)
     overrides: list[ExpenseCategoryOverride] = field(default_factory=list)
+    # Transaction ids left out of every analysis total and chart.
+    excluded: list[str] = field(default_factory=list)
 
 
 @dataclass

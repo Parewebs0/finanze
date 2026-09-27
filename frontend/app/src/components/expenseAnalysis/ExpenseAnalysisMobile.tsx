@@ -66,6 +66,8 @@ import {
   fill,
   useCategoryLabel,
 } from "./shared"
+import { AnalysisEntitySelector } from "./AnalysisEntitySelector"
+import { CategorizerCard } from "./CategorizerCard"
 
 type Props = { state: ExpenseAnalysisState }
 
@@ -141,7 +143,10 @@ function MovementsList({ state, title }: Props & { title: string }) {
   const { t } = useI18n()
   const { selectionTxs, money, brush, openTransactions } = state
   const [limit, setLimit] = useState(MOVEMENTS_PAGE)
-  const total = selectionTxs.reduce((s, tx) => s + tx.amount, 0)
+  const total = selectionTxs.reduce(
+    (sum, tx) => (tx.excluded ? sum : sum + tx.amount),
+    0,
+  )
   return (
     <MobileSection title={title} icon={CalendarDays}>
       <div className="mb-1 flex items-center justify-between gap-2">
@@ -350,6 +355,8 @@ export function ExpenseAnalysisMobile({ state }: Props) {
     loading,
     error,
     hasAnyTransactions,
+    hasConnectedSources,
+    selectedEntity,
   } = state
   const [tab, setTab] = useState("overview")
   const categoryColor = selectedRanking?.color ?? CHART_EXPENSE_COLOR
@@ -371,6 +378,7 @@ export function ExpenseAnalysisMobile({ state }: Props) {
           <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
         </Button>
       </div>
+      <AnalysisEntitySelector state={state} className="max-w-none" />
       <div className="-mx-6 overflow-x-auto no-scrollbar">
         <div className="flex w-max gap-2 px-6">
           {RANGE_PRESETS.map(p => (
@@ -400,14 +408,21 @@ export function ExpenseAnalysisMobile({ state }: Props) {
     return (
       <div className="space-y-6">
         {header}
+        <CategorizerCard state={state} />
         <Card className={cn(PAGE_CARD_CLASS, "p-6")}>
           <div className="flex flex-col items-center py-6 text-center">
             <Wallet className="h-10 w-10 mb-3 text-muted-foreground opacity-60" />
             <h2 className="text-lg font-semibold">
-              {t.expenseAnalysis.empty.title}
+              {hasConnectedSources
+                ? t.expenseAnalysis.empty.forSourceTitle
+                : t.expenseAnalysis.empty.title}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t.expenseAnalysis.empty.description}
+              {hasConnectedSources
+                ? fill(t.expenseAnalysis.empty.forSourceDescription, {
+                    name: selectedEntity?.name ?? "",
+                  })
+                : t.expenseAnalysis.empty.description}
             </p>
             <Button
               className="mt-4 h-11 w-full"
@@ -429,6 +444,9 @@ export function ExpenseAnalysisMobile({ state }: Props) {
       className="space-y-4"
     >
       <motion.div variants={fadeListItem}>{header}</motion.div>
+      <motion.div variants={fadeListItem}>
+        <CategorizerCard state={state} />
+      </motion.div>
 
       {(brush || selectedCategory) && (
         <motion.div variants={fadeListItem}>

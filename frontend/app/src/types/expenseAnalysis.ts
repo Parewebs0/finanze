@@ -56,6 +56,8 @@ export interface AnalysisTx {
   txType: TxType
   category: ExpenseCategoryId
   group: CategoryGroup
+  /** Marked by the user so it is omitted from totals and charts. */
+  excluded?: boolean
 }
 
 export interface DateRange {
@@ -184,4 +186,6 @@ export interface ExpenseAnalysisConfig {
   rules: ExpenseCategoryRule[]
   budgets: ExpenseBudget[]
   overrides: ExpenseCategoryOverride[]
+  /** Transaction ids omitted from totals and charts. */
+  excluded: string[]
 }

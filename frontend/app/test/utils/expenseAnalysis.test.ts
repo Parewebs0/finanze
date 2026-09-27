@@ -123,6 +123,7 @@ describe("categorization", () => {
       rules: [],
       budgets: [],
       overrides: [],
+      excluded: [],
       ...config,
     }).categorize({ id: "x", concept, amount, txType })
 
@@ -210,7 +211,12 @@ describe("adapter", () => {
     const res = toAnalysisTx(base, {
       targetCurrency: "EUR",
       exchangeRates: null,
-      categorizer: createCategorizer({ rules: [], budgets: [], overrides: [] }),
+      categorizer: createCategorizer({
+        rules: [],
+        budgets: [],
+        overrides: [],
+        excluded: [],
+      }),
     })
     expect(res).toMatchObject({
       date: "2026-05-03",

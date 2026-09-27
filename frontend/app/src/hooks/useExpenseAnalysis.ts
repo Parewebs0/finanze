@@ -3,7 +3,15 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { useAppContext } from "@/context/AppContext"
 import { useI18n } from "@/i18n"
 import { useDataDisplayMode } from "@/context/DataDisplayModeContext"
-import { getAccountTransactionsInRange } from "@/services/api"
+import {
+  categorizePayments,
+  connectCategorizer,
+  disconnectCategorizer,
+  getAccountTransactionsInRange,
+  getCategorizerStatus,
+  type CategorizerProvider,
+  type CategorizerStatus,
+} from "@/services/api"
 import { formatCompactCurrency, formatCurrency } from "@/lib/formatters"
 import { DataDisplayMode } from "@/types"
 import type { AccountTx } from "@/types/transactions"
@@ -37,6 +45,8 @@ import {
   spendingHeatmap,
   toAnalysisTxs,
   topMerchants,
+  isAnalysisSource,
+  isCategoryId,
 } from "@/utils/expenseAnalysis"
 
 const RECURRING_MONTHS = 6
@@ -48,6 +58,7 @@ function normalizeConfig(
     rules: raw?.rules ?? [],
     budgets: raw?.budgets ?? [],
     overrides: raw?.overrides ?? [],
+    excluded: raw?.excluded ?? [],
   }
 }
 
@@ -215,6 +226,24 @@ export function useExpenseAnalysisConfig() {
     setBudget,
     removeBudget,
     recategorize,
+    toggleExcluded: (txId: string) => {
+      const excluded = config.excluded.includes(txId)
+        ? config.excluded.filter(id => id !== txId)
+        : [...config.excluded, txId]
+      return persist({ ...config, excluded })
+    },
+    applyCategories: (
+      assignments: { txId: string; category: ExpenseCategoryId }[],
+    ) => {
+      const ids = new Set(assignments.map(item => item.txId))
+      return persist({
+        ...config,
+        overrides: [
+          ...config.overrides.filter(item => !ids.has(item.txId)),
+          ...assignments,
+        ],
+      })
+    },
   }
 }
 
@@ -224,11 +253,12 @@ export function useExpenseAnalysisConfig() {
  * on their own.
  */
 export function useExpenseAnalysis() {
-  const { settings, exchangeRates } = useAppContext()
+  const { settings, exchangeRates, entities, entitiesLoaded } = useAppContext()
   const navigate = useNavigate()
   const money = useAnalysisMoney()
   const configApi = useExpenseAnalysisConfig()
   const { config } = configApi
+  const [params, setParams] = useSearchParams()
 
   const [range, setRangeParam] = useAnalysisDateRange()
   const [selectedCategory, setSelectedCategory] =
@@ -238,9 +268,33 @@ export function useExpenseAnalysis() {
 
   const [rawTxs, setRawTxs] = useState<AccountTx[]>([])
   const [loadedWindow, setLoadedWindow] = useState<DateRange | null>(null)
+  const [loadedEntityId, setLoadedEntityId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [categorizer, setCategorizer] = useState<CategorizerStatus | null>(null)
+  const [categorizerBusy, setCategorizerBusy] = useState(false)
+  const [categorizing, setCategorizing] = useState(false)
+  const [categorizerError, setCategorizerError] = useState<string | null>(null)
   const requestIdRef = useRef(0)
+
+  const analysisEntities = useMemo(
+    () => entities.filter(isAnalysisSource),
+    [entities],
+  )
+  const entityParam = params.get("entity")
+  /** undefined while entities are still loading; null when none are connected. */
+  const resolvedEntityId = useMemo(() => {
+    if (!entitiesLoaded) return undefined
+    if (
+      entityParam &&
+      analysisEntities.some(entity => entity.id === entityParam)
+    ) {
+      return entityParam
+    }
+    return analysisEntities[0]?.id ?? null
+  }, [entitiesLoaded, entityParam, analysisEntities])
+  const selectedEntity =
+    analysisEntities.find(entity => entity.id === resolvedEntityId) ?? null
 
   const effectiveRange: DateRange = useMemo(
     () => brush ?? range,
@@ -256,15 +310,48 @@ export function useExpenseAnalysis() {
   )
   const heatmapYear = parseIsoDate(effectiveRange.to).getFullYear()
 
-  const load = useCallback(async (window: DateRange) => {
+  const setSelectedEntity = useCallback(
+    (id: string) => {
+      setParams(
+        prev => {
+          const next = new URLSearchParams(prev)
+          next.set("entity", id)
+          return next
+        },
+        { replace: true },
+      )
+      setBrush(null)
+      setSelectedCategory(null)
+    },
+    [setParams],
+  )
+
+  useEffect(() => {
+    if (!resolvedEntityId || entityParam === resolvedEntityId) return
+    setParams(
+      prev => {
+        const next = new URLSearchParams(prev)
+        next.set("entity", resolvedEntityId)
+        return next
+      },
+      { replace: true },
+    )
+  }, [resolvedEntityId, entityParam, setParams])
+
+  const load = useCallback(async (window: DateRange, entityId: string) => {
     const requestId = ++requestIdRef.current
     setLoading(true)
     setError(null)
     try {
-      const txs = await getAccountTransactionsInRange(window.from, window.to)
+      const txs = await getAccountTransactionsInRange(
+        window.from,
+        window.to,
+        entityId,
+      )
       if (requestId !== requestIdRef.current) return
       setRawTxs(txs)
       setLoadedWindow(window)
+      setLoadedEntityId(entityId)
     } catch (e) {
       if (requestId !== requestIdRef.current) return
       setError(e instanceof Error ? e.message : String(e))
@@ -274,23 +361,54 @@ export function useExpenseAnalysis() {
   }, [])
 
   useEffect(() => {
+    if (resolvedEntityId === undefined) return
+    if (!resolvedEntityId) {
+      setRawTxs([])
+      setLoadedEntityId(null)
+      setLoadedWindow(null)
+      setLoading(false)
+      return
+    }
     const covered =
-      loadedWindow &&
+      loadedEntityId === resolvedEntityId &&
+      loadedWindow != null &&
       loadedWindow.from <= needed.from &&
       loadedWindow.to >= needed.to
-    if (!covered) void load(needed)
-  }, [needed, loadedWindow, load])
+    if (!covered) {
+      if (loadedEntityId !== resolvedEntityId) setRawTxs([])
+      void load(needed, resolvedEntityId)
+    }
+  }, [resolvedEntityId, needed, loadedWindow, loadedEntityId, load])
 
-  const reload = useCallback(() => load(needed), [load, needed])
+  const reload = useCallback(() => {
+    if (resolvedEntityId) void load(needed, resolvedEntityId)
+  }, [load, needed, resolvedEntityId])
 
-  const txs = useMemo(
+  const scopedTxs = useMemo(
     () =>
-      toAnalysisTxs(rawTxs, {
+      resolvedEntityId
+        ? rawTxs.filter(tx => tx.entity?.id === resolvedEntityId)
+        : [],
+    [rawTxs, resolvedEntityId],
+  )
+
+  const excludedIds = useMemo(
+    () => new Set(config.excluded),
+    [config.excluded],
+  )
+  const allTxs = useMemo(
+    () =>
+      toAnalysisTxs(scopedTxs, {
         targetCurrency: money.currency,
         exchangeRates,
         categorizer: createCategorizer(config),
-      }),
-    [rawTxs, money.currency, exchangeRates, config],
+      }).map(tx => ({ ...tx, excluded: excludedIds.has(tx.id) })),
+    [scopedTxs, money.currency, exchangeRates, config, excludedIds],
+  )
+  /** Payments that still count. Excluded ones stay in the movement list only. */
+  const txs = useMemo(
+    () => allTxs.filter(tx => !tx.excluded),
+    [allTxs],
   )
 
   const current = useMemo(
@@ -353,10 +471,10 @@ export function useExpenseAnalysis() {
   /** Movements of the current selection (day, or range + category). */
   const selectionTxs = useMemo(() => {
     const scope = brush ?? range
-    return filterRange(txs, scope).filter(
+    return filterRange(allTxs, scope).filter(
       tx => !selectedCategory || tx.category === selectedCategory,
     )
-  }, [txs, brush, range, selectedCategory])
+  }, [allTxs, brush, range, selectedCategory])
 
   const uncategorizedCount = useMemo(
     () =>
@@ -366,7 +484,8 @@ export function useExpenseAnalysis() {
     [txs, effectiveRange],
   )
 
-  const hasAnyTransactions = rawTxs.length > 0
+  const hasAnyTransactions = scopedTxs.length > 0
+  const hasConnectedSources = analysisEntities.length > 0
 
   // ---- actions ----
   const setRange = useCallback(
@@ -403,9 +522,95 @@ export function useExpenseAnalysis() {
   const openTransactions = useCallback(
     (scope?: DateRange) => {
       const r = scope ?? effectiveRange
-      navigate(`/transactions?from_date=${r.from}&to_date=${r.to}`)
+      const query = new URLSearchParams({
+        from_date: r.from,
+        to_date: r.to,
+      })
+      if (resolvedEntityId) query.set("entity", resolvedEntityId)
+      navigate(`/transactions?${query.toString()}`)
     },
-    [navigate, effectiveRange],
+    [navigate, effectiveRange, resolvedEntityId],
+  )
+
+  const refreshCategorizer = useCallback(async () => {
+    try {
+      setCategorizer(await getCategorizerStatus())
+    } catch (e) {
+      setCategorizerError(e instanceof Error ? e.message : String(e))
+    }
+  }, [])
+
+  useEffect(() => {
+    void refreshCategorizer()
+  }, [refreshCategorizer])
+
+  const connectJev = useCallback(
+    async (provider: CategorizerProvider, apiKey: string) => {
+      setCategorizerBusy(true)
+      setCategorizerError(null)
+      try {
+        setCategorizer(await connectCategorizer(provider, apiKey))
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e)
+        setCategorizerError(message)
+        throw e
+      } finally {
+        setCategorizerBusy(false)
+      }
+    },
+    [],
+  )
+
+  const disconnectJev = useCallback(async () => {
+    setCategorizerBusy(true)
+    setCategorizerError(null)
+    try {
+      await disconnectCategorizer()
+      setCategorizer({ connected: false, provider: null, keyHint: null })
+    } catch (e) {
+      setCategorizerError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setCategorizerBusy(false)
+    }
+  }, [])
+
+  const recategorizeWithJev = useCallback(
+    async (onlyUncategorized: boolean) => {
+      const source = filterRange(txs, effectiveRange).filter(
+        tx => !onlyUncategorized || tx.category === "uncategorized",
+      )
+      if (source.length === 0) return 0
+      setCategorizing(true)
+      setCategorizerError(null)
+      try {
+        const result = await categorizePayments(
+          source.map(tx => ({
+            id: tx.id,
+            concept: tx.concept,
+            amount: tx.amount,
+            currency: tx.currency,
+            date: tx.date,
+            entityName: tx.entityName,
+          })),
+        )
+        const assignments = result.assignments.flatMap(item =>
+          isCategoryId(item.category)
+            ? [{ txId: item.id, category: item.category }]
+            : [],
+        )
+        if (assignments.length > 0) {
+          await configApi.applyCategories(assignments)
+        }
+        return assignments.length
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e)
+        setCategorizerError(message)
+        throw e
+      } finally {
+        setCategorizing(false)
+      }
+    },
+    [txs, effectiveRange, configApi],
   )
 
   return {
@@ -420,6 +625,10 @@ export function useExpenseAnalysis() {
     loading,
     error,
     hasAnyTransactions,
+    hasConnectedSources,
+    analysisEntities,
+    selectedEntityId: resolvedEntityId ?? null,
+    selectedEntity,
     defaultCurrency: settings?.general?.defaultCurrency || "EUR",
     // derived data
     txs,
@@ -438,11 +647,16 @@ export function useExpenseAnalysis() {
     selectionTxs,
     uncategorizedCount,
     config,
+    categorizer,
+    categorizerBusy,
+    categorizing,
+    categorizerError,
     // formatting
     money,
     // actions
     setRange,
     setPreset,
+    setSelectedEntity,
     toggleCategory,
     setSelectedCategory,
     selectDay,
@@ -450,6 +664,9 @@ export function useExpenseAnalysis() {
     clearBrush,
     clearSelection,
     openTransactions,
+    connectJev,
+    disconnectJev,
+    recategorizeWithJev,
     reload,
     isInEffectiveRange: (d: string) => isInRange(d, effectiveRange),
     configApi,

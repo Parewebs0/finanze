@@ -253,7 +253,7 @@ export default function TransactionsPage() {
       return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : ""
     }
     return {
-      entities: [],
+      entities: params.getAll("entity"),
       product_types: [],
       types: [],
       from_date: dateParam("from_date"),

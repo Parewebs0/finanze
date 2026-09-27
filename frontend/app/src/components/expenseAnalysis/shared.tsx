@@ -14,6 +14,8 @@ import {
   CircleHelp,
   Coins,
   Dumbbell,
+  Eye,
+  EyeOff,
   Gamepad2,
   HandCoins,
   HeartPulse,
@@ -743,8 +745,10 @@ export function MovementRow({
   const [createRule, setCreateRule] = useState(false)
   const options = useMemo(() => EXPENSE_CATEGORIES, [])
 
+  const excluded = tx.excluded === true
+
   return (
-    <li className={cn("py-2.5", touch && "py-3")}>
+    <li className={cn("py-2.5", touch && "py-3", excluded && "opacity-60")}>
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -760,7 +764,10 @@ export function MovementRow({
             {tx.concept}
           </p>
           <p className="truncate text-xs text-muted-foreground">
-            {label(tx.category)} · {tx.entityName} · {money.formatDay(tx.date)}
+            {excluded
+              ? t.expenseAnalysis.movements.excluded
+              : label(tx.category)}{" "}
+            · {tx.entityName} · {money.formatDay(tx.date)}
           </p>
         </div>
         <span
@@ -777,6 +784,29 @@ export function MovementRow({
             {money.formatSigned(tx.amount)}
           </Sensitive>
         </span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn("shrink-0", touch ? "h-11 w-11" : "h-8 w-8")}
+          aria-label={
+            excluded
+              ? t.expenseAnalysis.movements.include
+              : t.expenseAnalysis.movements.exclude
+          }
+          title={
+            excluded
+              ? t.expenseAnalysis.movements.include
+              : t.expenseAnalysis.movements.exclude
+          }
+          onClick={() => void configApi.toggleExcluded(tx.id)}
+        >
+          {excluded ? (
+            <Eye className="h-4 w-4" />
+          ) : (
+            <EyeOff className="h-4 w-4" />
+          )}
+        </Button>
       </div>
       {editing && (
         <div className="mt-2 flex flex-col gap-2 rounded-md border bg-muted/40 p-2 sm:flex-row sm:items-center">

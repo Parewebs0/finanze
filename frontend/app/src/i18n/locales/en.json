@@ -3401,6 +3401,27 @@
     "title": "Spending analysis",
     "navLabel": "Analysis",
     "refresh": "Refresh",
+    "source": {
+      "placeholder": "Select a bank"
+    },
+    "categorizer": {
+      "title": "Categorize with Jev",
+      "description": "Connect Jev from the app. The key stays in this local profile. OpenRouter uses model ~typesafe/jev-latest. Direct uses Jev at api.typesafe.ai.",
+      "openrouter": "OpenRouter",
+      "direct": "Jev direct",
+      "apiKey": "API key",
+      "openrouterHint": "OpenRouter key",
+      "directHint": "TypeSafe key",
+      "connect": "Connect",
+      "checking": "Checking key…",
+      "connected": "Jev is connected",
+      "disconnect": "Disconnect",
+      "using": "{provider} · {hint}",
+      "onlyUncategorized": "Only uncategorized movements in this period",
+      "recategorize": "Recategorize",
+      "working": "Categorizing…",
+      "done": "Updated {n} movements"
+    },
     "presets": {
       "month": "This month",
       "prevMonth": "Last month",
@@ -3490,6 +3511,9 @@
       "openInTransactions": "Open in Transactions",
       "close": "Close",
       "changeCategory": "Change category",
+      "exclude": "Don't count this payment",
+      "include": "Count this payment again",
+      "excluded": "Excluded from analysis",
       "createRule": "Also create a rule for similar movements",
       "showAll": "Show all ({n})"
     },
@@ -3517,7 +3541,9 @@
     "empty": {
       "title": "No bank movements yet",
       "description": "Connect a bank (e.g. Santander through Enable Banking or GoCardless) from Integrations and fetch its data to see your spending analysis here.",
-      "goToIntegrations": "Go to Integrations"
+      "goToIntegrations": "Go to Integrations",
+      "forSourceTitle": "No movements for this bank",
+      "forSourceDescription": "There are no account transactions for {name} yet. Fetch them from Integrations to see this bank's spending analysis."
     },
     "noExpenses": "No spending in this period.",
     "noData": "No movements in this range.",
