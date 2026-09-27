@@ -41,11 +41,11 @@ Reglas de desempate
 - Si no estoy seguro entre dos categorías, prefiero uncategorized a equivocarme.
 - Comercio español en mayúsculas (TRANSFERENCIA, COMPRA, ABONO) sigue siendo un movimiento normal: clasifica por el resto del concepto.
 
-Auto-transferencias
-- Cualquier entrada de dinero a la cuenta analizada es income. Sin excepciones.
-- TRANSFER_IN, transferencia inmediata, abono, ingreso, devolución, "DE JESUS MOLINA PIERNAS", concepto ahorro, traspaso recibido: otherIncome (o salary / bizumReceived / interest si encaja).
-- ownTransfer y savingsInvestment SOLO para salidas. Nunca para un importe positivo.
-- Salida hacia MyInvestor = savingsInvestment. Salida hacia otra cuenta propia = ownTransfer.
+Solo gastos
+- Solo clasificas SALIDAS (importe negativo). El income no te llega y no lo tocas.
+- Salida hacia MyInvestor / fondos / broker = savingsInvestment.
+- Salida hacia otra cuenta propia (Santander, Revolut) = ownTransfer.
+- El resto de compras y recibos, por comercio.
 `
 
 export function loadJevContext(): string {

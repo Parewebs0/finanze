@@ -14,13 +14,17 @@ export interface Categorizer {
   }): ExpenseCategoryId
 }
 
-/** Transfer-group labels never apply to money entering the account. */
-export function resolveInflowCategory(
-  category: ExpenseCategoryId,
-  txType?: TxType,
-): ExpenseCategoryId {
+export function isInflowTx(amount: number, txType?: TxType): boolean {
+  return (
+    amount > 0 ||
+    txType === TxType.TRANSFER_IN ||
+    txType === TxType.INTEREST
+  )
+}
+
+/** Income is never classified. Type maps to a bucket; Jev cannot change it. */
+export function incomeCategory(txType?: TxType): ExpenseCategoryId {
   if (txType === TxType.INTEREST) return "interest"
-  if (getCategory(category).group === "income") return category
   return "otherIncome"
 }
 
@@ -32,17 +36,10 @@ export function createCategorizer(config: ExpenseAnalysisConfig): Categorizer {
 
   return {
     categorize({ id, txType, amount }) {
+      if (isInflowTx(amount, txType)) return incomeCategory(txType)
+
       const override = overrides.get(id)
-      const inflow =
-        amount > 0 ||
-        txType === TxType.TRANSFER_IN ||
-        txType === TxType.INTEREST
-
-      if (inflow) {
-        return resolveInflowCategory(override ?? "otherIncome", txType)
-      }
-
-      if (override) return override
+      if (override && getCategory(override).group !== "income") return override
       if (txType === TxType.FEE) return "fees"
       return "uncategorized"
     },
