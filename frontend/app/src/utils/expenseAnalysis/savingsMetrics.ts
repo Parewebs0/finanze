@@ -1,9 +1,23 @@
-import type { RangeAggregates, Rule503020Result } from "@/types/expenseAnalysis"
+import type {
+  AnalysisTx,
+  DateRange,
+  RangeAggregates,
+  Rule503020Result,
+} from "@/types/expenseAnalysis"
 import { NEEDS_CATEGORIES } from "./categories"
+import { rangeAggregates as rawRangeAggregates } from "./calculations"
 
 const SAVING_CATS = new Set(["ownTransfer", "savingsInvestment"])
 
 const round2 = (n: number) => Math.round(n * 100) / 100 || 0
+
+export function rangeAggregates(
+  txs: AnalysisTx[],
+  range: DateRange,
+): RangeAggregates {
+  const agg = rawRangeAggregates(txs, range)
+  return { ...agg, savingsInvestment: investmentTotal(agg) }
+}
 
 export function investmentTotal(agg: RangeAggregates): number {
   return round2(
