@@ -5,7 +5,6 @@ export * from "./adapters"
 export {
   pctDelta,
   filterRange,
-  rangeAggregates,
   dailyCashflow,
   spendingHeatmap,
   heatmapWeeks,
@@ -18,7 +17,12 @@ export {
   categoryRanking,
   requiredWindow,
 } from "./calculations"
-export { savingsRate, rule503020, investmentTotal } from "./savingsMetrics"
+export {
+  rangeAggregates,
+  savingsRate,
+  rule503020,
+  investmentTotal,
+} from "./savingsMetrics"
 export * from "./savings"
 export * from "./payroll"
 export * from "./sources"
