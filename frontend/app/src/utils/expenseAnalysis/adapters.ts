@@ -64,7 +64,7 @@ export function toAnalysisTx(
     id: tx.id,
     ref: tx.ref,
     date,
-    analysisDate: analysisDateFor(date, category),
+    analysisDate: analysisDateFor(date, category, concept),
     amount: rounded,
     originalAmount: original,
     currency,
