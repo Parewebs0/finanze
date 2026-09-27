@@ -1,14 +1,77 @@
 import { useState } from "react"
-import { ChevronDown, Sparkles, Unplug } from "lucide-react"
+import { ChevronDown, FileText, Sparkles, Unplug } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Label } from "@/components/ui/Label"
 import { SecretInput } from "@/components/ui/SecretInput"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { useI18n } from "@/i18n"
+import { useModalBackHandler } from "@/hooks/useModalBackHandler"
 import type { ExpenseAnalysisState } from "@/hooks/useExpenseAnalysis"
 import type { CategorizerProvider } from "@/services/api"
 import { cn } from "@/lib/utils"
+import {
+  DEFAULT_JEV_CONTEXT,
+  loadJevContext,
+  saveJevContext,
+} from "@/utils/expenseAnalysis/jevContext"
 import { fill, PAGE_CARD_CLASS } from "./shared"
+
+function ContextModal({
+  open,
+  title,
+  hint,
+  saveLabel,
+  resetLabel,
+  cancelLabel,
+  value,
+  onChange,
+  onSave,
+  onReset,
+  onClose,
+}: {
+  open: boolean
+  title: string
+  hint: string
+  saveLabel: string
+  resetLabel: string
+  cancelLabel: string
+  value: string
+  onChange: (value: string) => void
+  onSave: () => void
+  onReset: () => void
+  onClose: () => void
+}) {
+  useModalBackHandler(open, onClose)
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <Card className="w-full max-w-lg">
+        <CardHeader>
+          <CardTitle className="text-lg">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">{hint}</p>
+          <textarea
+            className="min-h-[180px] w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            value={value}
+            onChange={event => onChange(event.target.value)}
+          />
+        </CardContent>
+        <div className="flex flex-wrap justify-end gap-2 px-6 pb-6">
+          <Button type="button" variant="ghost" onClick={onReset}>
+            {resetLabel}
+          </Button>
+          <Button type="button" variant="outline" onClick={onClose}>
+            {cancelLabel}
+          </Button>
+          <Button type="button" onClick={onSave}>
+            {saveLabel}
+          </Button>
+        </div>
+      </Card>
+    </div>
+  )
+}
 
 export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
   const { t } = useI18n()
@@ -21,6 +84,8 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
   const [onlyUncategorized, setOnlyUncategorized] = useState(true)
   const [notice, setNotice] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
+  const [contextOpen, setContextOpen] = useState(false)
+  const [contextDraft, setContextDraft] = useState(loadJevContext)
 
   const selectedProvider = state.categorizer?.provider ?? provider
 
@@ -182,6 +247,18 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
           >
             {state.categorizing ? copy.working : copy.recategorize}
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setContextDraft(loadJevContext())
+              setContextOpen(true)
+            }}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            {copy.contextButton ?? "Contexto"}
+          </Button>
         </div>
 
         {(notice || state.categorizerError) && (
@@ -197,6 +274,22 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
           </p>
         )}
       </CardContent>
+      <ContextModal
+        open={contextOpen}
+        title={copy.contextTitle ?? "Contexto del clasificador"}
+        hint={copy.contextHint ?? "Este texto se le pasa a Jev con cada movimiento."}
+        saveLabel={copy.contextSave ?? "Guardar"}
+        resetLabel={copy.contextReset ?? "Restaurar por defecto"}
+        cancelLabel={copy.contextCancel ?? "Cancelar"}
+        value={contextDraft}
+        onChange={setContextDraft}
+        onSave={() => {
+          saveJevContext(contextDraft)
+          setContextOpen(false)
+        }}
+        onReset={() => setContextDraft(DEFAULT_JEV_CONTEXT)}
+        onClose={() => setContextOpen(false)}
+      />
     </Card>
   )
 }
