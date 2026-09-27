@@ -1,3 +1,4 @@
+import type { ExpenseAnalysisConfig } from "@/types/expenseAnalysis"
 import {
   createContext,
   useContext,
@@ -61,6 +62,7 @@ export interface AppSettings {
     }
   }
   data?: DataConfig
+  expenseAnalysis?: ExpenseAnalysisConfig
 }
 
 export interface ExportState {

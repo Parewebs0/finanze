@@ -3409,5 +3409,158 @@
     "resetConfirmMessage": "¿Estás seguro de que quieres restablecer la configuración avanzada a sus valores por defecto?",
     "resetConfirmWarning": "La aplicación se reiniciará después de restablecer.",
     "availableAfterLoading": "Disponible después de cargar"
+  },
+  "expenseAnalysis": {
+    "title": "Análisis de gastos",
+    "navLabel": "Análisis",
+    "refresh": "Actualizar",
+    "presets": {
+      "month": "Este mes",
+      "prevMonth": "Mes anterior",
+      "3m": "3 meses",
+      "6m": "6 meses",
+      "year": "Año",
+      "all": "Todo",
+      "custom": "Personalizado"
+    },
+    "from": "Desde",
+    "to": "Hasta",
+    "activeView": "Vista activa",
+    "day": "Día {day}",
+    "fromTo": "{from} – {to}",
+    "viewTransactions": "Ver movimientos",
+    "backToFullPeriod": "Volver al periodo completo",
+    "kpis": {
+      "income": "Ingresos",
+      "expenses": "Gastos",
+      "savingsRate": "Tasa de ahorro",
+      "savingsRateSub": "{saved} líquido + {invested} invertido",
+      "avgDailySpend": "Gasto medio diario",
+      "vsPrevious": "vs periodo anterior"
+    },
+    "cashflow": {
+      "title": "Cashflow diario",
+      "hintDesktop": "Clic = ese día · arrastra = selecciona rango",
+      "hintMobile": "Toca un día para ver sus movimientos",
+      "income": "Ingreso",
+      "expense": "Gasto"
+    },
+    "distribution": {
+      "title": "Distribución del gasto",
+      "hint": "Clic en una porción → filtra cashflow y mapa de calor",
+      "hintMobile": "Toca una categoría para filtrar toda la página"
+    },
+    "ranking": {
+      "title": "Ranking por categoría",
+      "total": "{amount} total",
+      "times": "{n}×"
+    },
+    "rule": {
+      "title": "Regla 50/30/20",
+      "subtitle": "necesidades / deseos / ahorro",
+      "needs": "Necesidades",
+      "wants": "Deseos",
+      "savings": "Ahorro (líquido + inversión)",
+      "target": "objetivo {pct}%"
+    },
+    "recurring": {
+      "title": "Gastos fijos y suscripciones",
+      "subtitle": "detectados automáticamente",
+      "perMonth": "/mes estimado",
+      "description": "Lo que se va cada mes en fijos y suscripciones (últimos {months} meses).",
+      "empty": "Sin gastos recurrentes detectados en los últimos {months} meses.",
+      "months": "{n}m"
+    },
+    "budgets": {
+      "title": "Presupuestos",
+      "subtitle": "este periodo",
+      "category": "Categoría",
+      "amount": "Al mes",
+      "add": "Añadir",
+      "empty": "Pon presupuestos mensuales a las categorías que quieras vigilar.",
+      "periodHint": "{amount}/mes × {months}",
+      "remove": "Quitar presupuesto"
+    },
+    "heatmap": {
+      "title": "Mapa de calor del gasto diario",
+      "hint": "Clic en un día → sus movimientos y filtra toda la página a ese día.",
+      "empty": "Sin gastos registrados en {year}.",
+      "less": "Menos",
+      "more": "Más",
+      "spent": "{amount} gastados"
+    },
+    "evolution": {
+      "title": "Evolución 12 meses"
+    },
+    "merchants": {
+      "title": "Top comercios",
+      "empty": "Sin gastos en el periodo."
+    },
+    "movements": {
+      "title": "Movimientos",
+      "selection": "Movimientos de la selección",
+      "empty": "Sin movimientos.",
+      "openInTransactions": "Abrir en Transacciones",
+      "close": "Cerrar",
+      "changeCategory": "Cambiar categoría",
+      "createRule": "Crear también una regla para movimientos similares",
+      "showAll": "Ver todos ({n})"
+    },
+    "rules": {
+      "title": "Reglas de categorización",
+      "subtitle": "se aplican antes que las reglas integradas",
+      "description": "Expresión regular (sin distinguir mayúsculas) que se compara con el concepto del movimiento. Opcionalmente, limítala a un importe exacto con signo (p. ej. -50).",
+      "pattern": "Patrón",
+      "patternPlaceholder": "p. ej. mercadona|lidl",
+      "category": "Categoría",
+      "exactAmount": "Importe exacto (opcional)",
+      "add": "Añadir regla",
+      "empty": "Aún no hay reglas propias. Las reglas integradas para comercios españoles habituales se aplican siempre.",
+      "invalidPattern": "Expresión regular no válida",
+      "uncategorized": "{n} movimientos sin categorizar en este periodo",
+      "remove": "Quitar regla",
+      "amountBadge": "= {amount}"
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "categories": "Categorías",
+      "calendar": "Calendario",
+      "planning": "Plan"
+    },
+    "empty": {
+      "title": "Todavía no hay movimientos bancarios",
+      "description": "Conecta un banco (p. ej. Santander mediante Enable Banking o GoCardless) desde Integraciones y actualiza sus datos para ver aquí el análisis de tus gastos.",
+      "goToIntegrations": "Ir a Integraciones"
+    },
+    "noExpenses": "Sin gastos en el periodo.",
+    "noData": "Sin movimientos en el rango.",
+    "loadError": "No se pudieron cargar las transacciones",
+    "groups": {
+      "income": "Ingresos",
+      "expense": "Gastos",
+      "transfer": "Transferencias y ahorro"
+    },
+    "categories": {
+      "salary": "Nómina",
+      "otherIncome": "Otros ingresos",
+      "bizumReceived": "Bizum recibido",
+      "interest": "Intereses",
+      "housing": "Vivienda",
+      "utilities": "Suministros",
+      "groceries": "Supermercado",
+      "restaurants": "Restaurantes",
+      "transport": "Transporte",
+      "subscriptions": "Suscripciones",
+      "leisure": "Ocio",
+      "health": "Salud",
+      "shopping": "Compras",
+      "familyFriends": "Familia y amigos",
+      "sports": "Deporte",
+      "travel": "Viajes",
+      "fees": "Comisiones",
+      "uncategorized": "Sin categorizar",
+      "ownTransfer": "Transferencia propia",
+      "savingsInvestment": "Ahorro e inversión"
+    }
   }
 }
