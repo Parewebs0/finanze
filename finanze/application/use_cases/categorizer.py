@@ -47,7 +47,7 @@ class CategorizerService:
         self._store.clear()
 
     async def categorize(
-        self, payments: list[CategorizerPayment]
+        self, payments: list[CategorizerPayment], context_notes: str | None = None
     ) -> list[CategorizerAssignment]:
         if len(payments) > MAX_PAYMENTS:
             raise ValueError(f"At most {MAX_PAYMENTS} payments can be categorized")
@@ -56,7 +56,7 @@ class CategorizerService:
         connection = self._load()
         if connection is None:
             raise CategorizerNotConnected()
-        return await self._client.categorize(connection, payments)
+        return await self._client.categorize(connection, payments, context_notes)
 
     def _load(self) -> CategorizerConnection | None:
         try:
