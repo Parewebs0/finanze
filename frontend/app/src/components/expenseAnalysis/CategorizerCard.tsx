@@ -15,7 +15,6 @@ import {
   saveJevContext,
 } from "@/utils/expenseAnalysis/jevContext"
 import { fill, PAGE_CARD_CLASS } from "./shared"
-import { SavingsBreakdownBody } from "./SavingsBreakdownPanel"
 
 function ContextModal({
   open,
@@ -130,188 +129,175 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
       : copy.description)
 
   return (
-    <div className="space-y-6">
-      <Card className={PAGE_CARD_CLASS}>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Ahorro e inversión</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            De dónde sale la tasa: ingresos, gastos, traspasos e inversión.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <SavingsBreakdownBody state={state} />
-        </CardContent>
-      </Card>
-      <Card className={PAGE_CARD_CLASS}>
-        <CardHeader className="pb-3">
-          <button
-            type="button"
-            className="flex w-full items-start justify-between gap-3 text-left"
-            aria-expanded={open}
-            onClick={() => setOpen(value => !value)}
-          >
-            <div className="min-w-0 space-y-1">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Sparkles className="h-5 w-5 text-primary" />
-                {copy.title}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {open
-                  ? copy.description
-                  : connected
-                    ? fill(copy.using, {
-                        provider:
-                          selectedProvider === "direct"
-                            ? copy.direct
-                            : copy.openrouter,
-                        hint: state.categorizer?.keyHint ?? "",
-                      })
-                    : collapsedLabel}
-              </p>
-            </div>
-            <ChevronDown
-              className={cn(
-                "mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform",
-                open && "rotate-180",
-              )}
-            />
-          </button>
-        </CardHeader>
-        <CardContent className={cn("space-y-4", !open && "hidden")}>
-          <div className="flex flex-wrap gap-2">
-            {(
-              [
-                ["openrouter", copy.openrouter],
-                ["direct", copy.direct],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                disabled={state.categorizerBusy || connected}
-                onClick={() => setProvider(value)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-sm",
-                  (connected ? selectedProvider : provider) === value
-                    ? "border-transparent bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                    : "border-border text-muted-foreground",
-                )}
-              >
-                {label}
-              </button>
-            ))}
+    <Card className={PAGE_CARD_CLASS}>
+      <CardHeader className="pb-3">
+        <button
+          type="button"
+          className="flex w-full items-start justify-between gap-3 text-left"
+          aria-expanded={open}
+          onClick={() => setOpen(value => !value)}
+        >
+          <div className="min-w-0 space-y-1">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Sparkles className="h-5 w-5 text-primary" />
+              {copy.title}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {open
+                ? copy.description
+                : connected
+                  ? fill(copy.using, {
+                      provider:
+                        selectedProvider === "direct"
+                          ? copy.direct
+                          : copy.openrouter,
+                      hint: state.categorizer?.keyHint ?? "",
+                    })
+                  : collapsedLabel}
+            </p>
           </div>
-
-          {connected ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm">
-                {fill(copy.using, {
-                  provider:
-                    selectedProvider === "direct" ? copy.direct : copy.openrouter,
-                  hint: state.categorizer?.keyHint ?? "",
-                })}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={state.categorizerBusy}
-                onClick={() => void state.disconnectJev()}
-              >
-                <Unplug className="mr-2 h-4 w-4" />
-                {copy.disconnect}
-              </Button>
-            </div>
-          ) : (
-            <form
-              className="flex flex-col gap-3 sm:flex-row sm:items-end"
-              onSubmit={event => {
-                event.preventDefault()
-                void connect()
-              }}
-            >
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <Label htmlFor="jev-api-key">{copy.apiKey}</Label>
-                <SecretInput
-                  id="jev-api-key"
-                  value={apiKey}
-                  autoComplete="off"
-                  placeholder={
-                    provider === "direct" ? copy.directHint : copy.openrouterHint
-                  }
-                  onChange={event => setApiKey(event.target.value)}
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={state.categorizerBusy || apiKey.trim().length < 8}
-              >
-                {state.categorizerBusy ? copy.checking : copy.connect}
-              </Button>
-            </form>
-          )}
-
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={onlyUncategorized}
-                onChange={event => setOnlyUncategorized(event.target.checked)}
-              />
-              {copy.onlyUncategorized}
-            </label>
-            <Button
+          <ChevronDown
+            className={cn(
+              "mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform",
+              open && "rotate-180",
+            )}
+          />
+        </button>
+      </CardHeader>
+      <CardContent className={cn("space-y-4", !open && "hidden")}>
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              ["openrouter", copy.openrouter],
+              ["direct", copy.direct],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
               type="button"
-              variant="outline"
-              disabled={!connected || state.categorizing}
-              onClick={() => void recategorize()}
+              disabled={state.categorizerBusy || connected}
+              onClick={() => setProvider(value)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-sm",
+                (connected ? selectedProvider : provider) === value
+                  ? "border-transparent bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                  : "border-border text-muted-foreground",
+              )}
             >
-              {state.categorizing ? copy.working : copy.recategorize}
-            </Button>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {connected ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm">
+              {fill(copy.using, {
+                provider:
+                  selectedProvider === "direct" ? copy.direct : copy.openrouter,
+                hint: state.categorizer?.keyHint ?? "",
+              })}
+            </p>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => {
-                setContextDraft(loadJevContext())
-                setContextOpen(true)
-              }}
+              disabled={state.categorizerBusy}
+              onClick={() => void state.disconnectJev()}
             >
-              <FileText className="mr-2 h-4 w-4" />
-              {contextCopy.button}
+              <Unplug className="mr-2 h-4 w-4" />
+              {copy.disconnect}
             </Button>
           </div>
-
-          {(notice || state.categorizerError) && (
-            <p
-              className={cn(
-                "text-sm",
-                state.categorizerError
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-muted-foreground",
-              )}
+        ) : (
+          <form
+            className="flex flex-col gap-3 sm:flex-row sm:items-end"
+            onSubmit={event => {
+              event.preventDefault()
+              void connect()
+            }}
+          >
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <Label htmlFor="jev-api-key">{copy.apiKey}</Label>
+              <SecretInput
+                id="jev-api-key"
+                value={apiKey}
+                autoComplete="off"
+                placeholder={
+                  provider === "direct" ? copy.directHint : copy.openrouterHint
+                }
+                onChange={event => setApiKey(event.target.value)}
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={state.categorizerBusy || apiKey.trim().length < 8}
             >
-              {state.categorizerError ?? notice}
-            </p>
-          )}
-        </CardContent>
-        <ContextModal
-          open={contextOpen}
-          title={contextCopy.title}
-          hint={contextCopy.hint}
-          saveLabel={contextCopy.save}
-          resetLabel={contextCopy.reset}
-          cancelLabel={contextCopy.cancel}
-          value={contextDraft}
-          onChange={setContextDraft}
-          onSave={() => {
-            saveJevContext(contextDraft)
-            setContextOpen(false)
-          }}
-          onReset={() => setContextDraft(DEFAULT_JEV_CONTEXT)}
-          onClose={() => setContextOpen(false)}
-        />
-      </Card>
-    </div>
+              {state.categorizerBusy ? copy.checking : copy.connect}
+            </Button>
+          </form>
+        )}
+
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={onlyUncategorized}
+              onChange={event => setOnlyUncategorized(event.target.checked)}
+            />
+            {copy.onlyUncategorized}
+          </label>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!connected || state.categorizing}
+            onClick={() => void recategorize()}
+          >
+            {state.categorizing ? copy.working : copy.recategorize}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setContextDraft(loadJevContext())
+              setContextOpen(true)
+            }}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            {contextCopy.button}
+          </Button>
+        </div>
+
+        {(notice || state.categorizerError) && (
+          <p
+            className={cn(
+              "text-sm",
+              state.categorizerError
+                ? "text-red-600 dark:text-red-400"
+                : "text-muted-foreground",
+            )}
+          >
+            {state.categorizerError ?? notice}
+          </p>
+        )}
+      </CardContent>
+      <ContextModal
+        open={contextOpen}
+        title={contextCopy.title}
+        hint={contextCopy.hint}
+        saveLabel={contextCopy.save}
+        resetLabel={contextCopy.reset}
+        cancelLabel={contextCopy.cancel}
+        value={contextDraft}
+        onChange={setContextDraft}
+        onSave={() => {
+          saveJevContext(contextDraft)
+          setContextOpen(false)
+        }}
+        onReset={() => setContextDraft(DEFAULT_JEV_CONTEXT)}
+        onClose={() => setContextOpen(false)}
+      />
+    </Card>
   )
 }
