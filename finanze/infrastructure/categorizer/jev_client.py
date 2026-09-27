@@ -105,12 +105,16 @@ class JevCategorizerClient:
         self,
         connection: CategorizerConnection,
         payments: list[CategorizerPayment],
+        context_notes: str | None = None,
     ) -> list[CategorizerAssignment]:
         assigned: list[CategorizerAssignment] = []
+        context = dict(HOUSEHOLD_CONTEXT)
+        if context_notes and context_notes.strip():
+            context["notes"] = context_notes.strip()
         for start in range(0, len(payments), BATCH_SIZE):
             batch = payments[start : start + BATCH_SIZE]
             state = {
-                "context": HOUSEHOLD_CONTEXT,
+                "context": context,
                 "payments": {
                     payment.id: {
                         "date": payment.date,
