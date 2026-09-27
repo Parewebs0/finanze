@@ -20,7 +20,9 @@ def test_choice_question_offers_the_analysis_categories():
     assert question["type"] == "choice"
     assert "groceries" in question["criteria"]
     assert "uncategorized" in question["criteria"]
-    assert "payments.tx-1" in question["instructions"]
+    assert "`payments.tx-1`" in question["instructions"]
+    assert "Inflow only" in question["criteria"]["salary"]
+    assert "Outflow only" in question["criteria"]["groceries"]
 
 
 def test_assignments_ignore_unknown_categories():

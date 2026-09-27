@@ -39,17 +39,23 @@ def key_hint(api_key: str) -> str:
     return f"••••{trimmed[-4:]}"
 
 
+def payment_state_path(payment_id: str) -> str:
+    return f"payments.{payment_id}"
+
+
 def choice_question(payment_id: str) -> dict[str, Any]:
-    path = f"payments.{payment_id}"
+    path = payment_state_path(payment_id)
     return {
         "type": "choice",
         "instructions": (
-            f"Choose the category of `{path}`. "
-            f"Use `{path}.concept` (bank description, often Spanish), "
-            f"`{path}.amount` (negative leaves the account, positive comes in), "
-            f"`{path}.date` and `{path}.entity`. "
-            "Payroll and wages are salary. Transfers between the user's own "
-            "accounts are ownTransfer. If none fits, use uncategorized."
+            f"Categorize the bank payment at `{path}`. "
+            "Use its concept, signed amount, date and bank. "
+            "A negative amount is money leaving the account; "
+            "a positive amount is money coming in. "
+            "Concepts are often in Spanish. "
+            "Match the sign of the amount to the category "
+            "(inflow vs outflow). "
+            "Pick uncategorized when no option is a clear fit."
         ),
         "criteria": CATEGORY_CRITERIA,
     }
@@ -111,6 +117,9 @@ class JevCategorizerClient:
                         "amount": payment.amount,
                         "currency": payment.currency,
                         "entity": payment.entity_name,
+                        "direction": (
+                            "inflow" if payment.amount >= 0 else "outflow"
+                        ),
                     }
                     for payment in batch
                 }
