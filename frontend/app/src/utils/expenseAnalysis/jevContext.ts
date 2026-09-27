@@ -42,10 +42,10 @@ Reglas de desempate
 - Comercio español en mayúsculas (TRANSFERENCIA, COMPRA, ABONO) sigue siendo un movimiento normal: clasifica por el resto del concepto.
 
 Auto-transferencias
-- Las transferencias entre tus propias cuentas también cuentan como income/expense del mes (otherIncome si entran, uncategorized si salen sin coincidir un seed rule). El usuario prefiere verlas reflejadas en el flujo mensual aunque sean movimientos internos.
-- Aun así, si el banco las etiqueta explícitamente como "TRANSFERENCIA PROPIA" o "TRASPASO ENTRE CUENTAS" entre tus cuentas (Santander <-> MyInvestor, Revolut, etc.) y aparece como transferencia de ahorro, puedes marcarlas como ownTransfer si cuadra con la cuenta destino. Ejemplos:
-  - "TRANSFERENCIA INMEDIATA DE JESUS MOLINA PIERNAS, CONCEPTO ahorro" hacia otra cuenta tuya -> otherIncome por defecto (el usuario prefiere ver el flujo).
-  - Hacia MyInvestor explícitamente -> savingsInvestment.
+- Cualquier entrada de dinero a la cuenta analizada es income. Sin excepciones.
+- TRANSFER_IN, transferencia inmediata, abono, ingreso, devolución, "DE JESUS MOLINA PIERNAS", concepto ahorro, traspaso recibido: otherIncome (o salary / bizumReceived / interest si encaja).
+- ownTransfer y savingsInvestment SOLO para salidas. Nunca para un importe positivo.
+- Salida hacia MyInvestor = savingsInvestment. Salida hacia otra cuenta propia = ownTransfer.
 `
 
 export function loadJevContext(): string {

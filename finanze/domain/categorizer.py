@@ -49,23 +49,22 @@ HOUSEHOLD_CONTEXT = {
         "NÓMINA / ABONO NOMINA / SALARIO on an inflow is the monthly paycheck. "
         "Spanish employers often pay that paycheck on the last business days "
         "of the previous month. Bizum RECIBIDO is money received from a person; "
-        "Bizum ENVIADO is money sent. Transfers between the user's own accounts "
-        "are ownTransfer, not spending."
+        "Bizum ENVIADO is money sent. Incoming transfers (TRANSFER_IN, "
+        "positive amount) are always income. ownTransfer is outflow only."
     ),
 }
 
 
-# Choice criteria: each option stands alone, with direction so Jev does not
-# put an inflow in an expense bucket (or the reverse).
 CATEGORY_CRITERIA: dict[str, str] = {
     "salary": (
         "Inflow only. Regular employer paycheck. Spanish bank texts: "
         "NÓMINA, NOMINA, ABONO NOMINA, SALARIO, PAYROLL, PAGA. "
-        "Not a refund, not a transfer between own accounts, not a one-off extra."
+        "Not a refund and not a one-off extra."
     ),
     "otherIncome": (
         "Inflow only. Money coming in that is not salary, Bizum received, "
-        "or bank interest."
+        "or bank interest. Includes incoming bank transfers (TRANSFER_IN), "
+        "even when the concept has the user's own name or says ahorro."
     ),
     "bizumReceived": (
         "Inflow only. A Bizum received from someone else (BIZUM RECIBIDO)."
@@ -115,12 +114,13 @@ CATEGORY_CRITERIA: dict[str, str] = {
         "Outflow only. Bank fees, commissions or card charges that are not a purchase."
     ),
     "ownTransfer": (
-        "Transfer between the user's own accounts, including broker cash movements. "
-        "Not a payment to someone else."
+        "Outflow only. Money leaving this account toward another account "
+        "the user owns. Never use this for an incoming transfer "
+        "(positive amount / TRANSFER_IN): those are otherIncome."
     ),
     "savingsInvestment": (
-        "Money moved into savings, funds or investments. Not a purchase "
-        "and not an own-account transfer that stays as cash."
+        "Outflow only. Money leaving this account into savings, funds or "
+        "investments. Never use this for money arriving in the account."
     ),
     "uncategorized": (
         "None of the other categories is a clear fit. Prefer this when unsure."

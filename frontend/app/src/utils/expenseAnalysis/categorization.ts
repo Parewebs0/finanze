@@ -3,30 +3,7 @@ import type {
   ExpenseAnalysisConfig,
   ExpenseCategoryId,
 } from "@/types/expenseAnalysis"
-import { isCategoryId } from "./categories"
-
-/**
- * Frontend categorization fallback for the analysis page.
- *
- * The "smart" categorizer is Jev (TypeSafe), reached via the
- * `Categorize with Jev` card. Once Jev returns a category for a tx,
- * it is stored as an override in `config.overrides` (per-tx-id) and
- * applied here on every render.
- *
- * The local categorizer is intentionally tiny. It does NOT use seed
- * rules (no regex, no keyword lists). All it does:
- *   1. If Jev has already classified this tx (override), use that.
- *   2. Otherwise classify by bank tx type and direction:
- *      - INTEREST                -> interest (income)
- *      - FEE                     -> fees        (expense)
- *      - TRANSFER_IN, amount > 0 -> otherIncome (income)
- *      - any other inflow        -> otherIncome
- *      - any other outflow       -> uncategorized
- *
- * Everything else is Jev's job. If something doesn't have a category
- * yet, it shows as "uncategorized" in the UI and the user can press
- * "Re-categorize" to send it to Jev.
- */
+import { getCategory, isCategoryId } from "./categories"
 
 export interface Categorizer {
   categorize(input: {
@@ -37,6 +14,16 @@ export interface Categorizer {
   }): ExpenseCategoryId
 }
 
+/** Transfer-group labels never apply to money entering the account. */
+export function resolveInflowCategory(
+  category: ExpenseCategoryId,
+  txType?: TxType,
+): ExpenseCategoryId {
+  if (txType === TxType.INTEREST) return "interest"
+  if (getCategory(category).group === "income") return category
+  return "otherIncome"
+}
+
 export function createCategorizer(config: ExpenseAnalysisConfig): Categorizer {
   const overrides = new Map<string, ExpenseCategoryId>()
   for (const o of config.overrides ?? []) {
@@ -45,18 +32,19 @@ export function createCategorizer(config: ExpenseAnalysisConfig): Categorizer {
 
   return {
     categorize({ id, txType, amount }) {
-      // 1) Jev override (per-tx-id) wins.
       const override = overrides.get(id)
+      const inflow =
+        amount > 0 ||
+        txType === TxType.TRANSFER_IN ||
+        txType === TxType.INTEREST
+
+      if (inflow) {
+        return resolveInflowCategory(override ?? "otherIncome", txType)
+      }
+
       if (override) return override
-
-      // 2) Trivial type/direction fallback. No keyword rules.
-      if (txType === TxType.INTEREST) return "interest"
       if (txType === TxType.FEE) return "fees"
-      if (txType === TxType.TRANSFER_IN && amount > 0) return "otherIncome"
-
-      // 3) Unknown inflow/outflow -> uncategorized so Jev can take a look.
-      return amount >= 0 ? "otherIncome" : "uncategorized"
+      return "uncategorized"
     },
   }
 }
-
