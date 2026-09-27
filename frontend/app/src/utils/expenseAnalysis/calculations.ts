@@ -24,6 +24,7 @@ import {
   parseIsoDate,
   toIsoDate,
 } from "./dates"
+import { periodDate } from "./payroll"
 
 /**
  * Pure analysis calculations, one-to-one ports of Ledger's
@@ -38,7 +39,7 @@ export const pctDelta = (now: number, before: number): number | null =>
   before === 0 ? null : ((now - before) / Math.abs(before)) * 100
 
 export function filterRange(txs: AnalysisTx[], range: DateRange): AnalysisTx[] {
-  return txs.filter(tx => isInRange(tx.date, range))
+  return txs.filter(tx => isInRange(periodDate(tx), range))
 }
 
 /** Ledger rangeAggregates() */
@@ -50,7 +51,8 @@ export function rangeAggregates(
   let savingsInvestment = 0
 
   for (const tx of txs) {
-    if (!isInRange(tx.date, range)) continue
+    const bucketDate = periodDate(tx)
+    if (!isInRange(bucketDate, range)) continue
     if (tx.group === "transfer") {
       if (tx.amount < 0) savingsInvestment += -tx.amount
       continue
@@ -104,12 +106,13 @@ export function dailyCashflow(
 ): DailyPoint[] {
   const byDay = new Map<string, DailyPoint>()
   for (const tx of txs) {
-    if (tx.group === "transfer" || !isInRange(tx.date, range)) continue
+    const bucketDate = periodDate(tx)
+    if (tx.group === "transfer" || !isInRange(bucketDate, range)) continue
     if (category && tx.category !== category) continue
-    const p = byDay.get(tx.date) ?? { date: tx.date, income: 0, expenses: 0 }
+    const p = byDay.get(bucketDate) ?? { date: bucketDate, income: 0, expenses: 0 }
     if (tx.group === "income") p.income += tx.amount
     else p.expenses += -tx.amount
-    byDay.set(tx.date, p)
+    byDay.set(bucketDate, p)
   }
   return eachDay(range.from, range.to).map(date => {
     const p = byDay.get(date)
@@ -131,9 +134,10 @@ export function spendingHeatmap(
   const byDay = new Map<string, number>()
   for (const tx of txs) {
     if (tx.group !== "expense" || tx.amount >= 0) continue
-    if (!tx.date.startsWith(prefix)) continue
+    const bucketDate = periodDate(tx)
+    if (!bucketDate.startsWith(prefix)) continue
     if (category && tx.category !== category) continue
-    byDay.set(tx.date, (byDay.get(tx.date) ?? 0) + -tx.amount)
+    byDay.set(bucketDate, (byDay.get(bucketDate) ?? 0) + -tx.amount)
   }
   return [...byDay.entries()]
     .sort(([a], [b]) => (a < b ? -1 : 1))
@@ -225,7 +229,7 @@ export function detectRecurring(
     }
   >()
   for (const tx of txs) {
-    if (tx.amount >= 0 || tx.date < sinceIso) continue
+    if (tx.amount >= 0 || periodDate(tx) < sinceIso) continue
     const key = normalizeConcept(tx.concept)
     if (key.length < 4) continue
     const g = groups.get(key) ?? {
@@ -235,7 +239,7 @@ export function detectRecurring(
       example: tx.concept,
     }
     g.amounts.push(-tx.amount)
-    g.months.add(tx.date.slice(0, 7))
+    g.months.add(periodDate(tx).slice(0, 7))
     groups.set(key, g)
   }
 
@@ -298,7 +302,7 @@ export function budgetStatus(
   const months = monthsInRange(range.from, range.to)
   const spentByCat = new Map<ExpenseCategoryId, number>()
   for (const tx of txs) {
-    if (tx.amount >= 0 || !isInRange(tx.date, range)) continue
+    if (tx.amount >= 0 || !isInRange(periodDate(tx), range)) continue
     spentByCat.set(tx.category, (spentByCat.get(tx.category) ?? 0) + -tx.amount)
   }
   return budgets
@@ -336,7 +340,7 @@ export function monthlyEvolution(
   )
   for (const tx of txs) {
     if (tx.group === "transfer") continue
-    const p = byMonth.get(tx.date.slice(0, 7))
+    const p = byMonth.get(periodDate(tx).slice(0, 7))
     if (!p) continue
     if (tx.group === "income") p.income += tx.amount
     else p.expenses += -tx.amount
@@ -356,7 +360,7 @@ export function topMerchants(
   const byConcept = new Map<string, MerchantTotal>()
   for (const tx of txs) {
     if (tx.group !== "expense" || tx.amount >= 0) continue
-    if (!isInRange(tx.date, range)) continue
+    if (!isInRange(periodDate(tx), range)) continue
     const m = byConcept.get(tx.concept) ?? {
       concept: tx.concept,
       total: 0,
