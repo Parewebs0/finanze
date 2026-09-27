@@ -342,7 +342,7 @@ function YearHeatmap({ state }: Props) {
 }
 
 /**
- * Desktop / wide viewport view. Mirrors Ledger's "Análisis" information
+ * Desktop / wide viewport view.Mirrors Ledger's "Análisis" information
  * architecture, rendered with Finanze's cards, typography and chart styling.
  */
 export function ExpenseAnalysisDesktop({ state }: Props) {
