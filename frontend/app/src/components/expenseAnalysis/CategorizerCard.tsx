@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Sparkles, Unplug } from "lucide-react"
+import { ChevronDown, Sparkles, Unplug } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Label } from "@/components/ui/Label"
 import { SecretInput } from "@/components/ui/SecretInput"
@@ -20,6 +20,7 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
   const [apiKey, setApiKey] = useState("")
   const [onlyUncategorized, setOnlyUncategorized] = useState(true)
   const [notice, setNotice] = useState<string | null>(null)
+  const [open, setOpen] = useState(false)
 
   const selectedProvider = state.categorizer?.provider ?? provider
 
@@ -44,16 +45,53 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
     }
   }
 
+  const collapsedLabel =
+    (copy as { collapsedHint?: string }).collapsedHint ??
+    (connected
+      ? fill(copy.using, {
+          provider:
+            selectedProvider === "direct" ? copy.direct : copy.openrouter,
+          hint: state.categorizer?.keyHint ?? "",
+        })
+      : copy.description)
+
   return (
     <Card className={PAGE_CARD_CLASS}>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Sparkles className="h-5 w-5 text-primary" />
-          {copy.title}
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">{copy.description}</p>
+        <button
+          type="button"
+          className="flex w-full items-start justify-between gap-3 text-left"
+          aria-expanded={open}
+          onClick={() => setOpen(value => !value)}
+        >
+          <div className="min-w-0 space-y-1">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Sparkles className="h-5 w-5 text-primary" />
+              {copy.title}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {open
+                ? copy.description
+                : connected
+                  ? fill(copy.using, {
+                      provider:
+                        selectedProvider === "direct"
+                          ? copy.direct
+                          : copy.openrouter,
+                      hint: state.categorizer?.keyHint ?? "",
+                    })
+                  : collapsedLabel}
+            </p>
+          </div>
+          <ChevronDown
+            className={cn(
+              "mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform",
+              open && "rotate-180",
+            )}
+          />
+        </button>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className={cn("space-y-4", !open && "hidden")}>
         <div className="flex flex-wrap gap-2">
           {(
             [
