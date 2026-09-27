@@ -76,8 +76,15 @@ async def categorize_payments(service: CategorizerService):
             )
         )
 
+    context_notes = body.get("context") if isinstance(body, dict) else None
+    if context_notes is not None and not isinstance(context_notes, str):
+        return jsonify({"message": "context must be text"}), 400
+
     try:
-        assigned = await service.categorize(payments)
+        assigned = await service.categorize(
+            payments,
+            context_notes.strip() if isinstance(context_notes, str) else None,
+        )
     except NoUserLogged:
         return jsonify({"message": "Not logged in"}), 401
     except CategorizerNotConnected:
