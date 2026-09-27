@@ -77,7 +77,7 @@ TRADE_REPUBLIC = NativeFinancialEntity(
         ProductType.FUND,
         ProductType.CRYPTO,
     ],
-    setup_login_type=EntitySetupLoginType.MANUAL,
+    setup_login_type=EntitySetupLoginType.AUTOMATED,
     session_category=EntitySessionCategory.SHORT,
     pin=PinDetails(positions=4, channel=PinChannel.SMS),
     credentials_template={
