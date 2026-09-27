@@ -5,6 +5,7 @@ export const DEFAULT_JEV_CONTEXT = `Notas de esta casa (se envían a Jev como us
 Cuentas
 - Santander = cuenta corriente del día a día. Aquí cae la nómina y salen los pagos con tarjeta.
 - MyInvestor = ahorro / inversión. Cualquier transferencia o traspaso hacia MyInvestor es savingsInvestment, no gasto.
+- Revolut = cuenta donde va el dinero para la comida y los gastos habituales de casa. Los pagos hechos desde Revolut se categorizan por el comercio (groceries / restaurants / etc.), NO por ser Revolut.
 
 Nómina y ahorro
 - NOMINA / ABONO NOMINA / SALARIO = sueldo. En España suele entrar el 28–31.
@@ -14,11 +15,31 @@ Nómina y ahorro
 Bizum y cenas
 - Pago en restaurante / bar / Glovo / Uber Eats y al poco un BIZUM RECIBIDO de un importe parecido (a menudo la mitad) = me están devolviendo su parte de esa cena.
 - Ese Bizum no es ingreso extra. La cena sigue en restaurants; el Bizum es bizumReceived.
-- BIZUM ENVIADO a un amigo o familiar = familyFriends.
+- BIZUM ENVIADO a un amigo o familiar = familyFriends. En particular, todo lo que vaya a "Antonio Navarro" es familyFriends (amigo cercano: cualquier Bizum enviado a él es devolver/favorecer).
 
 Comercios habituales
-- Mercadona, Lidl, Carrefour, Consum = groceries.
-- Netflix, Spotify, iCloud = subscriptions.
+- Supermercados: Mercadona, Lidl, Carrefour, Consum, Aldi, Día = groceries.
+- Suscripciones digitales: Netflix, Spotify, iCloud, OpenAI, ChatGPT = subscriptions.
+- Telefonía y recibos: Movistar, Vodafone, Orange, Digi, Lowi, recibo de luz/gas = utilities.
+- Viajes y reservas: Renfe, Iryo, Ouigo, Iberia, Vueling, Ryanair, Airbnb, Booking = travel.
+- Tiendas generales: Amazon, Zara, H&M, Ikea, Decathlon, Primor = shopping.
+- Restaurantes y delivery: Glovo, Uber Eats, Just Eat, restaurantes, bares, cafeterías = restaurants.
+- Transporte: gasolineras (Repsol, Cepsa, BP, Shell, Pago Mobile de gasoline), Uber, Cabify, Renfe = transport.
+
+Deporte y salud
+- TNF Box = CrossFit, cajón = sports.
+- Otros gimnasios: Basic-Fit, VivaGym, McFit, padel, escalada = sports.
+- Farmacia, dentista, clínica, seguro médico (Sanitas, Adeslas, DKV) = health.
+
+Otros
+- Estanco / tabaco / vape = shopping (compra de tabaco). No es groceries ni restaurants.
+- Pagos defectuosos, devoluciones de comercios, cobros indebidos = fees si vienen del banco, otherIncome si es devolución de un comercio (un reembolso de Amazon, por ejemplo).
+- Llamadas recibidas de teléfono, SMS o cargos de operadoras sin importe (movimientos con importe 0 o casi 0) = uncategorized. No hay categoría para "tráfico entrante".
+- Bizum recibido de Antonio Navarro = bizumReceived (no es income extra, es devolución/cuenta pendiente).
+
+Reglas de desempate
+- Si no estoy seguro entre dos categorías, prefiero uncategorized a equivocarme.
+- Comercio español en mayúsculas (TRANSFERENCIA, COMPRA, ABONO) sigue siendo un movimiento normal: clasifica por el resto del concepto.
 `
 
 export function loadJevContext(): string {
