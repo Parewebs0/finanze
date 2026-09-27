@@ -50,7 +50,7 @@ export interface AnalysisTx {
    * Day used for totals and charts. Salary paid in the last 4 days of a
    * month is shifted to the 1st of the next month (early payroll).
    */
-  analysisDate: string
+  analysisDate?: string
   /** Signed amount in the display currency (+ income, - outflow) */
   amount: number
   originalAmount: number
