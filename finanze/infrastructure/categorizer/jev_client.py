@@ -55,6 +55,9 @@ def choice_question(payment_id: str) -> dict[str, Any]:
             "A negative amount is outflow; a positive amount is inflow. "
             "NÓMINA, ABONO NOMINA, SALARIO or PAYROLL on an inflow is salary. "
             "Match inflow/outflow to the category. "
+            "A TRANSFER_IN or any positive amount is income "
+            "(otherIncome unless it is salary, Bizum received or interest). "
+            "Never assign ownTransfer or savingsInvestment to an inflow. "
             "Pick uncategorized when no option is a clear fit."
         ),
         "criteria": CATEGORY_CRITERIA,
