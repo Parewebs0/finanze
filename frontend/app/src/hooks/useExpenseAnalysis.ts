@@ -12,6 +12,7 @@ import {
   type CategorizerProvider,
   type CategorizerStatus,
 } from "@/services/api"
+import { loadJevContext } from "@/utils/expenseAnalysis/jevContext"
 import { formatCompactCurrency, formatCurrency } from "@/lib/formatters"
 import { DataDisplayMode } from "@/types"
 import type { AccountTx } from "@/types/transactions"
@@ -592,6 +593,7 @@ export function useExpenseAnalysis() {
             date: tx.date,
             entityName: tx.entityName,
           })),
+          loadJevContext(),
         )
         const assignments = result.assignments.flatMap(item =>
           isCategoryId(item.category)

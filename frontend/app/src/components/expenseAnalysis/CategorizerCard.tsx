@@ -89,7 +89,7 @@ export function CategorizerCard({ state }: { state: ExpenseAnalysisState }) {
     state.categorizer?.provider ?? "openrouter",
   )
   const [apiKey, setApiKey] = useState("")
-  const [onlyUncategorized, setOnlyUncategorized] = useState(true)
+  const [onlyUncategorized, setOnlyUncategorized] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [contextOpen, setContextOpen] = useState(false)

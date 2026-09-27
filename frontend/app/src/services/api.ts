@@ -428,8 +428,12 @@ export async function categorizePayments(
     date: string
     entityName: string
   }[],
+  context?: string,
 ): Promise<{ assignments: CategorizerAssignment[] }> {
-  return (await getApiClient()).post("/analysis/categorize", { transactions })
+  const trimmed = context?.trim()
+  const body: Record<string, unknown> = { transactions }
+  if (trimmed) body.context = trimmed
+  return (await getApiClient()).post("/analysis/categorize", body)
 }
 
 export async function getAccountTransactionsInRange(
