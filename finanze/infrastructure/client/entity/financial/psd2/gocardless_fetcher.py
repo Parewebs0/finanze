@@ -33,6 +33,11 @@ from domain.global_position import (
     GlobalPosition,
     ProductType,
 )
+from domain.transactions import AccountTx, Transactions
+from infrastructure.client.entity.financial.psd2.psd2_transactions import (
+    history_start,
+    map_gocardless_tx,
+)
 from infrastructure.client.financial.gocardless.gocardless_client import (
     GoCardlessClient,
 )
@@ -251,3 +256,38 @@ class GoCardlessFetcher(ExternalEntityFetcher):
         products = {ProductType.ACCOUNT: Accounts(accounts)}
 
         return GlobalPosition(id=uuid4(), entity=request.entity, products=products)
+
+    async def transactions(
+        self, request: ExternalEntityFetchRequest, registered_refs: set[str]
+    ) -> Transactions:
+        requisition_id = request.external_entity.provider_instance_id
+        requisition_details = self._client.get_requisition(requisition_id)
+        raw_accounts = requisition_details["accounts"]
+        date_from = history_start(registered_refs)
+
+        account_txs: list[AccountTx] = []
+        seen: set[str] = set(registered_refs)
+
+        for account_id in raw_accounts:
+            try:
+                result = self._client.get_account_transactions(
+                    account_id, date_from=date_from
+                )
+            except HTTPError as e:
+                code = e.response.status_code
+                if code in (401, 403, 409):
+                    raise ExternalEntityLinkExpired() from e
+                elif code == 429:
+                    raise TooManyRequests() from e
+                else:
+                    raise ExternalEntityFailed() from e
+
+            booked = (result.get("transactions") or {}).get("booked") or []
+            for raw_tx in booked:
+                tx = map_gocardless_tx(raw_tx, account_id, request.entity)
+                if tx is None or tx.ref in seen:
+                    continue
+                seen.add(tx.ref)
+                account_txs.append(tx)
+
+        return Transactions(account=account_txs)

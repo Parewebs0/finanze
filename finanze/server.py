@@ -599,6 +599,7 @@ class FinanzeServer:
             external_integration_repository,
             last_fetches_repository,
             transaction_handler,
+            transaction_repository,
         )
         export_sheets = ExportSheetsImpl(
             position_repository,

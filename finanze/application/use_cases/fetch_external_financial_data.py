@@ -1,7 +1,7 @@
 import logging
 from asyncio import Lock
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from application.ports.entity_port import EntityPort
@@ -13,6 +13,7 @@ from application.ports.external_integration_port import ExternalIntegrationPort
 from application.ports.last_fetches_port import LastFetchesPort
 from application.ports.position_port import PositionPort
 from application.ports.transaction_handler_port import TransactionHandlerPort
+from application.ports.transaction_port import TransactionPort
 from application.use_cases.fetch_financial_data import handle_cooldown
 from dateutil.tz import tzlocal
 from domain.entity import EntityOrigin, Feature
@@ -21,6 +22,7 @@ from domain.exception.exceptions import (
     ExecutionConflict,
     ExternalEntityFailed,
     ExternalEntityLinkExpired,
+    FeatureNotSupported,
 )
 from domain.external_entity import (
     ExternalEntityFetchRequest,
@@ -31,12 +33,13 @@ from domain.external_integration import (
     ExternalIntegrationId,
     ExternalIntegrationType,
 )
-from domain.fetch_record import FetchRecord
+from domain.fetch_record import DataSource, FetchRecord
 from domain.fetch_result import (
     FetchedData,
     FetchResult,
     FetchResultCode,
 )
+from domain.transactions import Transactions
 from domain.use_cases.fetch_external_financial_data import FetchExternalFinancialData
 
 
@@ -52,6 +55,7 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
         external_integration_port: ExternalIntegrationPort,
         last_fetches_port: LastFetchesPort,
         transaction_handler_port: TransactionHandlerPort,
+        transaction_port: Optional[TransactionPort] = None,
     ):
         self._entity_port = entity_port
         self._external_entity_port = external_entity_port
@@ -60,6 +64,7 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
         self._external_integration_port = external_integration_port
         self._last_fetches_port = last_fetches_port
         self._transaction_handler_port = transaction_handler_port
+        self._transaction_port = transaction_port
 
         self._lock = Lock()
 
@@ -107,16 +112,33 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
                     entity=entity,
                 )
                 position = await provider.global_position(fetch_request)
+                transactions, txs_failed = await self._fetch_transactions(
+                    provider, fetch_request, entity_id
+                )
 
                 async with self._transaction_handler_port.start():
                     if position:
                         await self._position_port.save(position)
 
-                    await self._update_last_fetch(entity_id, [Feature.POSITION])
+                    features = [Feature.POSITION]
+                    if transactions is not None:
+                        if transactions.account:
+                            await self._transaction_port.save(transactions)
+                        features.append(Feature.TRANSACTIONS)
 
-                    return FetchResult(
-                        FetchResultCode.COMPLETED, data=FetchedData(position=position)
-                    )
+                    await self._update_last_fetch(entity_id, features)
+
+                    data = FetchedData(position=position, transactions=transactions)
+                    if txs_failed:
+                        return FetchResult(
+                            FetchResultCode.PARTIALLY_COMPLETED,
+                            data=data,
+                            details={
+                                "completedFeatures": [Feature.POSITION.value],
+                                "failedFeatures": [Feature.TRANSACTIONS.value],
+                            },
+                        )
+                    return FetchResult(FetchResultCode.COMPLETED, data=data)
 
             except ExternalEntityFailed:
                 return FetchResult(FetchResultCode.REMOTE_FAILED)
@@ -125,6 +147,34 @@ class FetchExternalFinancialDataImpl(FetchExternalFinancialData):
                     external_entity_id, ExternalEntityStatus.UNLINKED
                 )
                 return FetchResult(FetchResultCode.LINK_EXPIRED)
+
+    async def _fetch_transactions(
+        self,
+        provider: ExternalEntityFetcher,
+        fetch_request: ExternalEntityFetchRequest,
+        entity_id: UUID,
+    ) -> tuple[Optional[Transactions], bool]:
+        """Fetch PSD2 booked transactions when the provider supports it.
+
+        Returns (transactions, failed). A failure here doesn't discard the
+        already fetched position, except when the link expired."""
+        if self._transaction_port is None:
+            return None, False
+
+        try:
+            existing = await self._transaction_port.get_by_entity_and_source(
+                entity_id, DataSource.REAL
+            )
+            registered_refs = {tx.ref for tx in (existing.account or [])}
+            transactions = await provider.transactions(fetch_request, registered_refs)
+            return transactions, False
+        except FeatureNotSupported:
+            return None, False
+        except ExternalEntityLinkExpired:
+            raise
+        except Exception:
+            self._log.exception("Failed to fetch external entity transactions")
+            return None, True
 
     async def _update_last_fetch(self, entity_id: UUID, features: List[Feature]):
         now = datetime.now(tzlocal())

@@ -11,6 +11,7 @@ from domain.external_entity import (
 )
 from domain.external_integration import EnabledExternalIntegrations
 from domain.global_position import GlobalPosition
+from domain.transactions import Transactions
 
 
 class ExternalEntityFetcher(metaclass=abc.ABCMeta):
@@ -45,4 +46,15 @@ class ExternalEntityFetcher(metaclass=abc.ABCMeta):
     async def global_position(
         self, request: ExternalEntityFetchRequest
     ) -> GlobalPosition:
+        raise FeatureNotSupported
+
+    async def transactions(
+        self, request: ExternalEntityFetchRequest, registered_refs: set[str]
+    ) -> Transactions:
+        """Fetch booked account transactions (PSD2 account information).
+
+        Implementations should skip transactions whose ref is already in
+        ``registered_refs``. Providers that can't return transactions keep
+        raising ``FeatureNotSupported`` and only the position is stored.
+        """
         raise FeatureNotSupported

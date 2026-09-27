@@ -432,6 +432,7 @@ class LazyComponents:
                 d.ext_int_repo,
                 d.last_fetches_repo,
                 d.tx_handler,
+                d.tx_repo,
             )
 
             market_forecast_provider = polymarket_fetcher
