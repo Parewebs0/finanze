@@ -1,0 +1,46 @@
+import type { RangeAggregates, Rule503020Result } from "@/types/expenseAnalysis"
+import { NEEDS_CATEGORIES } from "./categories"
+
+const SAVING_CATS = new Set(["ownTransfer", "savingsInvestment"])
+
+const round2 = (n: number) => Math.round(n * 100) / 100 || 0
+
+export function investmentTotal(agg: RangeAggregates): number {
+  return round2(
+    -agg.byCategory
+      .filter(c => c.category === "savingsInvestment")
+      .reduce((s, c) => s + c.total, 0),
+  )
+}
+
+/** Solo inversión / ingresos */
+export function savingsRate(agg: RangeAggregates): number {
+  const invested = investmentTotal(agg)
+  return agg.income > 0 ? (invested / agg.income) * 100 : 0
+}
+
+export function rule503020(agg: RangeAggregates): Rule503020Result {
+  let needs = 0
+  let wants = 0
+  let allocated = 0
+  for (const c of agg.byCategory) {
+    if (c.group !== "expense") continue
+    const spent = -c.total
+    if (SAVING_CATS.has(c.category)) allocated += spent
+    else if (NEEDS_CATEGORIES.has(c.category)) needs += spent
+    else wants += spent
+  }
+  const savings = agg.savings + allocated
+  const base = agg.income > 0 ? agg.income : needs + wants + savings || 1
+  const bucket = (value: number, target: number) => ({
+    value: round2(value),
+    pct: Math.round((100 * value * 10) / base) / 10,
+    target,
+  })
+  return {
+    income: agg.income,
+    needs: bucket(needs, 50),
+    wants: bucket(wants, 30),
+    savings: bucket(savings, 20),
+  }
+}
