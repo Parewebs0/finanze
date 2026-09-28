@@ -4,12 +4,6 @@ import type {
   ExpenseCategoryId,
 } from "@/types/expenseAnalysis"
 
-/**
- * Category catalogue ported from Ledger's seed (db/index.ts), with stable ids
- * instead of Spanish names so they can be translated. Two Finanze-specific
- * categories were added for transaction types Ledger never saw: `interest`
- * (TxType.INTEREST) and `fees` (TxType.FEE).
- */
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   { id: "salary", group: "income", color: "#22c55e" },
   { id: "otherIncome", group: "income", color: "#16a34a" },
@@ -27,6 +21,11 @@ export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   { id: "familyFriends", group: "expense", color: "#14b8a6" },
   { id: "sports", group: "expense", color: "#10b981" },
   { id: "travel", group: "expense", color: "#38bdf8" },
+  { id: "beauty", group: "expense", color: "#f472b6" },
+  { id: "softwareAi", group: "expense", color: "#818cf8" },
+  { id: "education", group: "expense", color: "#fbbf24" },
+  { id: "pets", group: "expense", color: "#fb923c" },
+  { id: "insurance", group: "expense", color: "#0ea5e9", need: true },
   { id: "fees", group: "expense", color: "#94a3b8" },
   { id: "uncategorized", group: "expense", color: "#9ca3af" },
   { id: "ownTransfer", group: "expense", color: "#64748b" },
@@ -47,7 +46,34 @@ export function categoriesByGroup(group: CategoryGroup): ExpenseCategory[] {
   return EXPENSE_CATEGORIES.filter(c => c.group === group)
 }
 
-/** 50/30/20 "needs" set (Ledger: Vivienda, Suministros, Supermercado, Transporte, Salud). */
 export const NEEDS_CATEGORIES = new Set<ExpenseCategoryId>(
   EXPENSE_CATEGORIES.filter(c => c.need).map(c => c.id),
 )
+
+export const CATEGORY_LABELS: Record<ExpenseCategoryId, string> = {
+  salary: "Nómina",
+  otherIncome: "Otros ingresos",
+  bizumReceived: "Bizum recibido",
+  interest: "Intereses",
+  housing: "Vivienda",
+  utilities: "Suministros",
+  groceries: "Supermercado",
+  restaurants: "Restaurantes",
+  transport: "Transporte",
+  subscriptions: "Suscripciones",
+  leisure: "Ocio",
+  health: "Salud",
+  shopping: "Compras",
+  familyFriends: "Familia y amigos",
+  sports: "Deporte",
+  travel: "Viajes",
+  beauty: "Belleza",
+  softwareAi: "Software e IA",
+  education: "Formación",
+  pets: "Mascotas",
+  insurance: "Seguros",
+  fees: "Comisiones",
+  uncategorized: "Sin categoría",
+  ownTransfer: "Traspaso propio",
+  savingsInvestment: "Ahorro e inversión",
+}
