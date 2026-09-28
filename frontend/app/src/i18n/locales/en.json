@@ -3499,7 +3499,18 @@
       "planSummary": "{income} income · {expenses} expenses · you'd save {savings} ({pct}%)",
       "planSummaryDeficit": "{income} income · {expenses} expenses · you'd overspend by {deficit}",
       "planPctOfIncome": "{pct}% of income",
-      "planIncomePlaceholder": "Income source"
+      "planIncomePlaceholder": "Income source",
+      "split": "Split",
+      "splitBadge": "Split into {n}",
+      "splitAddPart": "Add part",
+      "splitSumMustMatch": "Parts must total {amount}",
+      "splitSumShort": "Missing {amount} to cover the total",
+      "splitSumOver": "Over by {amount} of the total",
+      "splitRemove": "Remove part",
+      "splitRemoveAll": "Remove split",
+      "splitNote": "Note (optional)",
+      "splitCategoryLabel": "Category",
+      "splitAmountLabel": "Amount"
     },
     "heatmap": {
       "title": "Daily spending heatmap",

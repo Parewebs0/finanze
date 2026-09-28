@@ -33,6 +33,7 @@ import {
   Repeat,
   ShoppingBag,
   ShoppingCart,
+  Split,
   TrendingUp,
   Users,
   UtensilsCrossed,
@@ -40,6 +41,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react"
+const SplitIcon = Split
 import { cn } from "@/lib/utils"
 import { useI18n } from "@/i18n"
 import { Button } from "@/components/ui/Button"
@@ -51,6 +53,7 @@ import type {
   AnalysisTx,
   BudgetStatus,
   ExpenseCategoryId,
+  ExpenseSplitPart,
   RangePreset,
   RecurringResult,
 } from "@/types/expenseAnalysis"
@@ -932,8 +935,17 @@ export function MovementRow({
   const label = useCategoryLabel()
   const { money, configApi } = state
   const [editing, setEditing] = useState(false)
+  const [splitting, setSplitting] = useState(false)
   const options = useMemo(() => EXPENSE_CATEGORIES, [])
   const excluded = tx.excluded === true
+  // A child of a split delegates the editor back to the parent so the user
+  // can manage all parts together from any of them.
+  const parentId = tx.parentId ?? tx.id
+  const currentSplit = (state.config.splits ?? []).find(
+    s => s.parentId === parentId,
+  )
+  const canSplit = tx.amount < 0
+  const splitPartCount = currentSplit?.parts.length ?? 0
   return (
     <li className={cn("py-2.5", touch && "py-3", excluded && "opacity-60")}>
       <div className="flex items-center gap-3">
@@ -949,6 +961,16 @@ export function MovementRow({
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium" title={tx.concept}>
             {tx.concept}
+            {tx.parentId && splitPartCount > 0 && (
+              <Badge
+                variant="secondary"
+                className="ml-1.5 text-[10px] px-1.5 py-0 align-middle"
+              >
+                {fill(t.expenseAnalysis.budgets.splitBadge, {
+                  n: splitPartCount,
+                })}
+              </Badge>
+            )}
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {excluded
@@ -971,6 +993,19 @@ export function MovementRow({
             {money.formatSigned(tx.amount)}
           </Sensitive>
         </span>
+        {canSplit && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={cn("shrink-0", touch ? "h-11 w-11" : "h-8 w-8")}
+            aria-label={t.expenseAnalysis.budgets.split}
+            title={t.expenseAnalysis.budgets.split}
+            onClick={() => setSplitting(s => !s)}
+          >
+            <SplitIcon className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -1017,6 +1052,228 @@ export function MovementRow({
           </select>
         </div>
       )}
+      {splitting && (
+        <SplitEditor
+          parentId={parentId}
+          totalAmount={Math.abs(
+            tx.parentId ? tx.amount * (splitPartCount || 1) : tx.amount,
+          )}
+          existing={currentSplit?.parts ?? []}
+          money={money}
+          label={label}
+          touch={touch}
+          t={t.expenseAnalysis.budgets}
+          onSave={async parts => {
+            await configApi.setSplit(parentId, parts)
+            setSplitting(false)
+          }}
+          onRemove={async () => {
+            await configApi.removeSplit(parentId)
+            setSplitting(false)
+          }}
+          onClose={() => setSplitting(false)}
+        />
+      )}
     </li>
+  )
+}
+
+/**
+ * Editor for splitting a single expense transaction into N parts, each with
+ * its own category, amount and optional note. Persists via configApi.setSplit
+ * (which is also responsible for NOT saving unless the parts sum to the
+ * parent's total amount).
+ */
+function SplitEditor({
+  parentId,
+  totalAmount,
+  existing,
+  money,
+  label,
+  touch,
+  t,
+  onSave,
+  onRemove,
+  onClose,
+}: {
+  parentId: string
+  totalAmount: number
+  existing: ExpenseSplitPart[]
+  money: { format: (n: number) => string }
+  label: (id: ExpenseCategoryId) => string
+  touch: boolean
+  t: Record<string, string>
+  onSave: (parts: ExpenseSplitPart[]) => Promise<void> | void
+  onRemove: () => Promise<void> | void
+  onClose: () => void
+}) {
+  const { t: tr } = useI18n()
+  const [parts, setParts] = useState<ExpenseSplitPart[]>(() =>
+    existing.length > 0
+      ? existing
+      : [
+          {
+            id: Math.random().toString(36).slice(2, 10),
+            category: "groceries" as ExpenseCategoryId,
+            amount: 0,
+          },
+        ],
+  )
+
+  const total = parts.reduce((s, p) => s + (Number(p.amount) || 0), 0)
+  const diff = Math.round((totalAmount - total) * 100) / 100
+  const isExact = Math.abs(diff) < 0.005
+
+  const addPart = () => {
+    setParts(ps => [
+      ...ps,
+      {
+        id: Math.random().toString(36).slice(2, 10),
+        category: "groceries" as ExpenseCategoryId,
+        amount: 0,
+      },
+    ])
+  }
+
+  const removePart = (id: string) => {
+    setParts(ps => ps.filter(p => p.id !== id))
+  }
+
+  const updatePart = (
+    id: string,
+    patch: Partial<Pick<ExpenseSplitPart, "category" | "amount" | "note">>,
+  ) => {
+    setParts(ps => ps.map(p => (p.id === id ? { ...p, ...patch } : p)))
+  }
+
+  const save = async () => {
+    if (!isExact) return
+    await onSave(parts)
+  }
+
+  return (
+    <div className="mt-2 rounded-md border border-border bg-muted/40 p-3 text-sm">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="font-semibold">{t.split}</div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>
+            {tr.expenseAnalysis.budgets.splitAmountLabel}:{" "}
+            <strong className="tabular-nums text-foreground">
+              {money.format(totalAmount)}
+            </strong>
+          </span>
+          <span aria-hidden>·</span>
+          <span className="tabular-nums">
+            {money.format(total)} / {money.format(totalAmount)}
+          </span>
+        </div>
+      </div>
+
+      <ul className="space-y-2">
+        {parts.map(p => (
+          <li
+            key={p.id}
+            className={cn(
+              "grid grid-cols-12 items-center gap-2",
+              touch && "gap-1.5",
+            )}
+          >
+            <select
+              aria-label={t.splitCategoryLabel}
+              value={p.category}
+              onChange={e =>
+                updatePart(p.id, { category: e.target.value as ExpenseCategoryId })
+              }
+              className={cn(
+                SELECT_CLASS,
+                "col-span-5",
+                touch && "h-11",
+              )}
+            >
+              {EXPENSE_CATEGORIES.map(c => (
+                <option key={c.id} value={c.id}>
+                  {label(c.id)}
+                </option>
+              ))}
+            </select>
+            <Input
+              aria-label={t.splitAmountLabel}
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              value={p.amount === 0 ? "" : String(p.amount)}
+              onChange={e =>
+                updatePart(p.id, {
+                  amount: e.target.value === "" ? 0 : Number(e.target.value),
+                })
+              }
+              placeholder={`${t.splitAmountLabel} (${money.format(totalAmount)})`}
+              className={cn("col-span-3 tabular-nums", touch && "h-11")}
+            />
+            <Input
+              aria-label={t.splitNote}
+              type="text"
+              value={p.note ?? ""}
+              onChange={e => updatePart(p.id, { note: e.target.value })}
+              placeholder={t.splitNote}
+              className={cn("col-span-3", touch && "h-11")}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t.splitRemove}
+              onClick={() => removePart(p.id)}
+              className={cn("col-span-1", touch ? "h-11 w-11" : "h-8 w-8")}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <Button variant="outline" size="sm" onClick={addPart}>
+          <Plus className="h-4 w-4 mr-1" />
+          {t.splitAddPart}
+        </Button>
+        <div className="flex items-center gap-2">
+          {existing.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void onRemove()}
+              className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
+            >
+              {t.splitRemoveAll}
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            ✕
+          </Button>
+          <Button size="sm" disabled={!isExact} onClick={() => void save()}>
+            {tr.expenseAnalysis.budgets.add}
+          </Button>
+        </div>
+      </div>
+
+      {!isExact && (
+        <p
+          className={cn(
+            "mt-2 text-xs",
+            diff < 0 ? "text-red-600" : "text-amber-600",
+          )}
+        >
+          {diff < 0
+            ? fill(t.splitSumOver, { amount: money.format(Math.abs(diff)) })
+            : fill(t.splitSumShort, { amount: money.format(diff) })}
+        </p>
+      )}
+      {isExact && (
+        <p className="mt-2 text-xs text-green-600">
+          {fill(t.splitSumMustMatch, { amount: money.format(totalAmount) })}
+        </p>
+      )}
+    </div>
   )
 }

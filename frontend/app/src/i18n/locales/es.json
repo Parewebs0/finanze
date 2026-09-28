@@ -3512,7 +3512,18 @@
       "planSummary": "{income} ingresos · {expenses} gastos · ahorrarías {savings} ({pct}%)",
       "planSummaryDeficit": "{income} ingresos · {expenses} gastos · te pasarías {deficit}",
       "planPctOfIncome": "{pct}% del ingreso",
-      "planIncomePlaceholder": "Fuente de ingreso"
+      "planIncomePlaceholder": "Fuente de ingreso",
+      "split": "Dividir",
+      "splitBadge": "Dividido en {n}",
+      "splitAddPart": "Añadir parte",
+      "splitSumMustMatch": "Las partes deben sumar {amount}",
+      "splitSumShort": "Faltan {amount} para cubrir el total",
+      "splitSumOver": "Te pasas {amount} del total",
+      "splitRemove": "Quitar parte",
+      "splitRemoveAll": "Eliminar división",
+      "splitNote": "Nota (opcional)",
+      "splitCategoryLabel": "Categoría",
+      "splitAmountLabel": "Importe"
     },
     "heatmap": {
       "title": "Mapa de calor del gasto diario",

@@ -21,10 +21,12 @@ import type {
   DateRange,
   ExpenseAnalysisConfig,
   ExpenseCategoryId,
+  ExpenseSplitPart,
   PresetRange,
   RangePreset,
 } from "@/types/expenseAnalysis"
 import {
+  applySplits,
   budgetStatus,
   categoryRanking,
   createCategorizer,
@@ -59,6 +61,7 @@ function normalizeConfig(
     budgets: raw?.budgets ?? [],
     overrides: raw?.overrides ?? [],
     excluded: raw?.excluded ?? [],
+    splits: raw?.splits ?? [],
     planBudgets: raw?.planBudgets ?? [],
     planIncomes: raw?.planIncomes ?? [],
   }
@@ -227,6 +230,27 @@ export function useExpenseAnalysisConfig() {
     [config, persist],
   )
 
+  const setSplit = useCallback(
+    (parentId: string, parts: ExpenseSplitPart[]) =>
+      persist({
+        ...config,
+        splits: [
+          ...(config.splits ?? []).filter(s => s.parentId !== parentId),
+          { parentId, parts },
+        ],
+      }),
+    [config, persist],
+  )
+
+  const removeSplit = useCallback(
+    (parentId: string) =>
+      persist({
+        ...config,
+        splits: (config.splits ?? []).filter(s => s.parentId !== parentId),
+      }),
+    [config, persist],
+  )
+
   const recategorize = useCallback(
     (tx: AnalysisTx, category: ExpenseCategoryId) => {
       return persist({
@@ -248,6 +272,8 @@ export function useExpenseAnalysisConfig() {
     removePlanBudget,
     setPlanIncome,
     removePlanIncome,
+    setSplit,
+    removeSplit,
     recategorize,
     toggleExcluded: (txId: string) => {
       const excluded = config.excluded.includes(txId)
@@ -455,15 +481,20 @@ export function useExpenseAnalysis() {
     () => new Set(config.excluded),
     [config.excluded],
   )
-  const allTxs = useMemo(
-    () =>
-      toAnalysisTxs(scopedTxs, {
-        targetCurrency: money.currency,
-        exchangeRates,
-        categorizer: createCategorizer(config),
-      }).map(tx => ({ ...tx, excluded: excludedIds.has(tx.id) })),
-    [scopedTxs, money.currency, exchangeRates, config, excludedIds],
-  )
+  const allTxs = useMemo(() => {
+    const base = toAnalysisTxs(scopedTxs, {
+      targetCurrency: money.currency,
+      exchangeRates,
+      categorizer: createCategorizer(config),
+    })
+    // Apply user splits. If the parent was excluded, propagate that to the
+    // children too so they don't sneak back into totals.
+    const split = applySplits(base, config.splits ?? [])
+    return split.map(tx => ({
+      ...tx,
+      excluded: excludedIds.has(tx.id) || excludedIds.has(tx.parentId ?? ""),
+    }))
+  }, [scopedTxs, money.currency, exchangeRates, config, excludedIds])
   /** Payments that still count. Excluded ones stay in the movement list only. */
   const txs = useMemo(
     () => allTxs.filter(tx => !tx.excluded),

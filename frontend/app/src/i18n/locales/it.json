@@ -3494,7 +3494,18 @@
       "planSummary": "{income} entrate · {expenses} spese · risparmieresti {savings} ({pct}%)",
       "planSummaryDeficit": "{income} entrate · {expenses} spese · andresti oltre di {deficit}",
       "planPctOfIncome": "{pct}% delle entrate",
-      "planIncomePlaceholder": "Fonte di reddito"
+      "planIncomePlaceholder": "Fonte di reddito",
+      "split": "Dividi",
+      "splitBadge": "Diviso in {n}",
+      "splitAddPart": "Aggiungi parte",
+      "splitSumMustMatch": "Le parti devono totalizzare {amount}",
+      "splitSumShort": "Mancano {amount} per coprire il totale",
+      "splitSumOver": "Superato di {amount} il totale",
+      "splitRemove": "Rimuovi parte",
+      "splitRemoveAll": "Elimina divisione",
+      "splitNote": "Nota (opzionale)",
+      "splitCategoryLabel": "Categoria",
+      "splitAmountLabel": "Importo"
     },
     "heatmap": {
       "title": "Mappa di calore della spesa giornaliera",
