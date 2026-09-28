@@ -33,6 +33,7 @@ export type ExpenseCategoryId =
   | "pets"
   | "insurance"
   | "fees"
+  | "cashWithdrawal"
   | "uncategorized"
   | "ownTransfer"
   | "savingsInvestment"
@@ -59,6 +60,8 @@ export interface AnalysisTx {
   category: ExpenseCategoryId
   group: CategoryGroup
   excluded?: boolean
+  /** Bank movement this synthetic slice comes from. */
+  parentId?: string
 }
 
 export interface DateRange {
@@ -193,9 +196,22 @@ export interface ExpenseCategoryOverride {
   category: ExpenseCategoryId
 }
 
+export interface ExpenseSplitPart {
+  id: string
+  category: ExpenseCategoryId
+  amount: number
+  note?: string
+}
+
+export interface ExpenseTxSplit {
+  parentId: string
+  parts: ExpenseSplitPart[]
+}
+
 export interface ExpenseAnalysisConfig {
   rules: ExpenseCategoryRule[]
   budgets: ExpenseBudget[]
   overrides: ExpenseCategoryOverride[]
   excluded: string[]
+  splits: ExpenseTxSplit[]
 }
