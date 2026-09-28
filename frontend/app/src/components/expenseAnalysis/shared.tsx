@@ -363,18 +363,25 @@ export function RecurringList({
   )
 }
 
+export type BudgetMode = "real" | "plan"
+
 export function BudgetsEditor({
   budgets,
   state,
   compact = false,
+  initialMode = "real",
 }: {
   budgets: BudgetStatus[]
   state: ExpenseAnalysisState
   compact?: boolean
+  initialMode?: BudgetMode
 }) {
   const { t } = useI18n()
   const label = useCategoryLabel()
   const { money, configApi } = state
+  const [mode, setMode] = useState<BudgetMode>(initialMode)
+
+  // ─── Real mode: legacy behaviour, untouched ────────────────────────────────
   const [category, setCategory] = useState<string>("")
   const [amount, setAmount] = useState("")
   const available = EXPENSE_CATEGORIES.filter(
@@ -389,16 +396,165 @@ export function BudgetsEditor({
     setAmount("")
   }
 
+  // ─── Plan mode: independent forms for income + expense ────────────────────
+  const { config } = configApi
+  const planBudgets = config.planBudgets ?? []
+  const planIncomes = config.planIncomes ?? []
+
+  const [pIncomeCat, setPIncomeCat] = useState<string>("")
+  const [pIncomeAmt, setPIncomeAmt] = useState("")
+  const incomeAvailable = EXPENSE_CATEGORIES.filter(
+    c => c.group === "income" && !planIncomes.some(b => b.category === c.id),
+  )
+
+  const [pExpCat, setPExpCat] = useState<string>("")
+  const [pExpAmt, setPExpAmt] = useState("")
+  const expAvailable = EXPENSE_CATEGORIES.filter(
+    c => c.group === "expense" && !planBudgets.some(b => b.category === c.id),
+  )
+
+  const addPlanIncome = async () => {
+    const v = Number(pIncomeAmt)
+    if (!pIncomeCat || !pIncomeAmt || !(v >= 0)) return
+    await configApi.setPlanIncome(pIncomeCat as ExpenseCategoryId, v)
+    setPIncomeCat("")
+    setPIncomeAmt("")
+  }
+
+  const addPlanExpense = async () => {
+    const v = Number(pExpAmt)
+    if (!pExpCat || !pExpAmt || !(v >= 0)) return
+    await configApi.setPlanBudget(pExpCat as ExpenseCategoryId, v)
+    setPExpCat("")
+    setPExpAmt("")
+  }
+
+  const totalIncome = planIncomes.reduce((s, b) => s + b.amount, 0)
+  const totalExpenses = planBudgets.reduce((s, b) => s + b.amount, 0)
+  const savings = totalIncome - totalExpenses
+  const savingsPct =
+    totalIncome > 0 ? Math.round((savings / totalIncome) * 100) : 0
+
+  // ─── Pill switch ──────────────────────────────────────────────────────────
+  const Pill = (
+    <div className="inline-flex h-8 items-center rounded-full border border-border bg-muted p-0.5 text-xs">
+      {(["real", "plan"] as BudgetMode[]).map(m => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => setMode(m)}
+          className={cn(
+            "h-7 rounded-full px-3 font-medium transition-colors",
+            mode === m
+              ? "bg-foreground text-background shadow"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {m === "real"
+            ? t.expenseAnalysis.budgets.modeReal
+            : t.expenseAnalysis.budgets.modePlan}
+        </button>
+      ))}
+    </div>
+  )
+
+  // If the parent (SectionCard action) doesn't consume the pill, render it
+  // ourselves so the user can still toggle. This keeps Desktop/Mobile callers
+  // backward-compatible — they can opt-in to the action slot if they want it
+  // in the card header.
   return (
     <div className="space-y-4">
+      {mode === "real" ? (
+        <>
+          <div className="flex items-center justify-end">{Pill}</div>
+          <BudgetRealMode
+            budgets={budgets}
+            category={category}
+            setCategory={setCategory}
+            amount={amount}
+            setAmount={setAmount}
+            available={available}
+            label={label}
+            money={money}
+            compact={compact}
+            onAdd={add}
+            onRemove={cat => configApi.removeBudget(cat)}
+            t={t.expenseAnalysis.budgets}
+          />
+        </>
+      ) : (
+        <BudgetPlanMode
+          money={money}
+          label={label}
+          compact={compact}
+          pill={Pill}
+          planIncomes={planIncomes}
+          planBudgets={planBudgets}
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          savings={savings}
+          savingsPct={savingsPct}
+          incomeAvailable={incomeAvailable}
+          expAvailable={expAvailable}
+          pIncomeCat={pIncomeCat}
+          setPIncomeCat={setPIncomeCat}
+          pIncomeAmt={pIncomeAmt}
+          setPIncomeAmt={setPIncomeAmt}
+          pExpCat={pExpCat}
+          setPExpCat={setPExpCat}
+          pExpAmt={pExpAmt}
+          setPExpAmt={setPExpAmt}
+          onAddPlanIncome={addPlanIncome}
+          onAddPlanExpense={addPlanExpense}
+          onRemoveIncome={cat => configApi.removePlanIncome(cat)}
+          onRemoveExpense={cat => configApi.removePlanBudget(cat)}
+          t={t.expenseAnalysis.budgets}
+        />
+      )}
+    </div>
+  )
+}
+
+function BudgetRealMode({
+  budgets,
+  category,
+  setCategory,
+  amount,
+  setAmount,
+  available,
+  label,
+  money,
+  compact,
+  onAdd,
+  onRemove,
+  t,
+}: {
+  budgets: BudgetStatus[]
+  category: string
+  setCategory: (s: string) => void
+  amount: string
+  setAmount: (s: string) => void
+  available: { id: ExpenseCategoryId }[]
+  label: (id: ExpenseCategoryId) => string
+  money: {
+    format: (n: number) => string
+    currency: string
+  }
+  compact: boolean
+  onAdd: () => void
+  onRemove: (cat: ExpenseCategoryId) => void
+  t: Record<string, string>
+}) {
+  return (
+    <>
       <div className={cn("flex gap-2", compact && "flex-col")}>
         <select
-          aria-label={t.expenseAnalysis.budgets.category}
+          aria-label={t.category}
           value={category}
           onChange={e => setCategory(e.target.value)}
           className={cn(SELECT_CLASS, !compact && "flex-1", compact && "h-11")}
         >
-          <option value="">{t.expenseAnalysis.budgets.category}…</option>
+          <option value="">{t.category}…</option>
           {available.map(c => (
             <option key={c.id} value={c.id}>
               {label(c.id)}
@@ -411,23 +567,23 @@ export function BudgetsEditor({
             inputMode="decimal"
             min="0"
             step="10"
-            placeholder={`${t.expenseAnalysis.budgets.amount} (${money.currency})`}
+            placeholder={`${t.amount} (${money.currency})`}
             value={amount}
             onChange={e => setAmount(e.target.value)}
             className={cn(compact ? "h-11 flex-1" : "w-32")}
           />
           <Button
-            onClick={add}
+            onClick={onAdd}
             disabled={!category || !amount}
             className={cn(compact && "h-11")}
           >
             <Plus className="h-4 w-4 mr-1" />
-            {t.expenseAnalysis.budgets.add}
+            {t.add}
           </Button>
         </div>
       </div>
       {budgets.length === 0 ? (
-        <EmptyHint>{t.expenseAnalysis.budgets.empty}</EmptyHint>
+        <EmptyHint>{t.empty}</EmptyHint>
       ) : (
         <ul className="space-y-3">
           {budgets.map(b => (
@@ -450,8 +606,8 @@ export function BudgetsEditor({
                   variant="ghost"
                   size="icon"
                   className={cn(compact ? "h-10 w-10" : "h-7 w-7")}
-                  aria-label={t.expenseAnalysis.budgets.remove}
-                  onClick={() => configApi.removeBudget(b.category)}
+                  aria-label={t.remove}
+                  onClick={() => onRemove(b.category)}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -460,7 +616,7 @@ export function BudgetsEditor({
               {b.budget !== b.monthlyBudget && b.monthlyBudget > 0 && (
                 <p className="text-[11px] text-muted-foreground">
                   <Sensitive className="text-muted-foreground">
-                    {fill(t.expenseAnalysis.budgets.periodHint, {
+                    {fill(t.periodHint, {
                       amount: money.format(b.monthlyBudget),
                       months: Math.round(b.budget / b.monthlyBudget),
                     })}
@@ -479,11 +635,245 @@ export function BudgetsEditor({
               {money.format(budgets.reduce((s, b) => s + b.budget, 0))}
             </Sensitive>
             {" / "}
-            <Sensitive>{money.format(budgets.reduce((s, b) => s + b.spent, 0))}</Sensitive>
+            <Sensitive>
+              {money.format(budgets.reduce((s, b) => s + b.spent, 0))}
+            </Sensitive>
           </span>
         </div>
       )}
-    </div>
+    </>
+  )
+}
+
+function BudgetPlanMode({
+  money,
+  label,
+  compact,
+  pill,
+  planIncomes,
+  planBudgets,
+  totalIncome,
+  totalExpenses,
+  savings,
+  savingsPct,
+  incomeAvailable,
+  expAvailable,
+  pIncomeCat,
+  setPIncomeCat,
+  pIncomeAmt,
+  setPIncomeAmt,
+  pExpCat,
+  setPExpCat,
+  pExpAmt,
+  setPExpAmt,
+  onAddPlanIncome,
+  onAddPlanExpense,
+  onRemoveIncome,
+  onRemoveExpense,
+  t,
+}: {
+  money: {
+    format: (n: number) => string
+    currency: string
+  }
+  label: (id: ExpenseCategoryId) => string
+  compact: boolean
+  pill: React.ReactNode
+  planIncomes: { category: ExpenseCategoryId; amount: number }[]
+  planBudgets: { category: ExpenseCategoryId; amount: number }[]
+  totalIncome: number
+  totalExpenses: number
+  savings: number
+  savingsPct: number
+  incomeAvailable: { id: ExpenseCategoryId }[]
+  expAvailable: { id: ExpenseCategoryId }[]
+  pIncomeCat: string
+  setPIncomeCat: (s: string) => void
+  pIncomeAmt: string
+  setPIncomeAmt: (s: string) => void
+  pExpCat: string
+  setPExpCat: (s: string) => void
+  pExpAmt: string
+  setPExpAmt: (s: string) => void
+  onAddPlanIncome: () => void
+  onAddPlanExpense: () => void
+  onRemoveIncome: (cat: ExpenseCategoryId) => void
+  onRemoveExpense: (cat: ExpenseCategoryId) => void
+  t: Record<string, string>
+}) {
+  const summary =
+    savings >= 0
+      ? fill(t.planSummary, {
+          income: money.format(totalIncome),
+          expenses: money.format(totalExpenses),
+          savings: money.format(savings),
+          pct: String(savingsPct),
+        })
+      : fill(t.planSummaryDeficit, {
+          income: money.format(totalIncome),
+          expenses: money.format(totalExpenses),
+          deficit: money.format(-savings),
+        })
+
+  const renderRow = (
+    b: { category: ExpenseCategoryId; amount: number },
+    onRemove: (cat: ExpenseCategoryId) => void,
+  ) => {
+    const pctOfIncome =
+      totalIncome > 0 ? (b.amount / totalIncome) * 100 : null
+    return (
+      <li key={b.category} className="flex items-center gap-2 py-1.5">
+        <CategoryIcon category={b.category} size="sm" />
+        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+          {label(b.category)}
+        </span>
+        <span className="text-sm tabular-nums">
+          <Sensitive>{money.format(b.amount)}</Sensitive>
+        </span>
+        {pctOfIncome !== null && (
+          <span className="w-16 text-right text-[11px] tabular-nums text-muted-foreground">
+            {fill(t.planPctOfIncome, {
+              pct: Math.round(pctOfIncome).toString(),
+            })}
+          </span>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(compact ? "h-10 w-10" : "h-7 w-7")}
+          aria-label={t.remove}
+          onClick={() => onRemove(b.category)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </li>
+    )
+  }
+
+  return (
+    <>
+      <div className="flex items-center justify-end">{pill}</div>
+
+      {(planIncomes.length > 0 || planBudgets.length > 0) && (
+        <div
+          className={cn(
+            "rounded-md border border-dashed border-border bg-muted/40 px-3 py-2 text-sm",
+            savings < 0 && "border-red-400/60 bg-red-50/40 dark:bg-red-950/20",
+          )}
+        >
+          <Sensitive>{summary}</Sensitive>
+        </div>
+      )}
+
+      <div
+        className={cn(
+          "grid gap-4",
+          compact ? "grid-cols-1" : "md:grid-cols-2",
+        )}
+      >
+        {/* Ingresos planeados */}
+        <section className="space-y-2">
+          <h4 className="text-sm font-semibold">{t.planIncomes}</h4>
+          <div className={cn("flex gap-2", compact && "flex-col")}>
+            <select
+              aria-label={t.planIncomePlaceholder}
+              value={pIncomeCat}
+              onChange={e => setPIncomeCat(e.target.value)}
+              className={cn(
+                SELECT_CLASS,
+                !compact && "flex-1",
+                compact && "h-11",
+              )}
+            >
+              <option value="">{t.planIncomePlaceholder}…</option>
+              {incomeAvailable.map(c => (
+                <option key={c.id} value={c.id}>
+                  {label(c.id)}
+                </option>
+              ))}
+            </select>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="50"
+                placeholder={`${t.amount} (${money.currency})`}
+                value={pIncomeAmt}
+                onChange={e => setPIncomeAmt(e.target.value)}
+                className={cn(compact ? "h-11 flex-1" : "w-32")}
+              />
+              <Button
+                onClick={onAddPlanIncome}
+                disabled={!pIncomeCat || !pIncomeAmt}
+                className={cn(compact && "h-11")}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                {t.add}
+              </Button>
+            </div>
+          </div>
+          {planIncomes.length === 0 ? (
+            <EmptyHint>{t.planIncomesEmpty}</EmptyHint>
+          ) : (
+            <ul className="divide-y divide-border rounded-md border border-border/60 bg-card/30">
+              {planIncomes.map(b => renderRow(b, onRemoveIncome))}
+            </ul>
+          )}
+        </section>
+
+        {/* Gastos planeados */}
+        <section className="space-y-2">
+          <h4 className="text-sm font-semibold">{t.planExpenses}</h4>
+          <div className={cn("flex gap-2", compact && "flex-col")}>
+            <select
+              aria-label={t.category}
+              value={pExpCat}
+              onChange={e => setPExpCat(e.target.value)}
+              className={cn(
+                SELECT_CLASS,
+                !compact && "flex-1",
+                compact && "h-11",
+              )}
+            >
+              <option value="">{t.category}…</option>
+              {expAvailable.map(c => (
+                <option key={c.id} value={c.id}>
+                  {label(c.id)}
+                </option>
+              ))}
+            </select>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="10"
+                placeholder={`${t.amount} (${money.currency})`}
+                value={pExpAmt}
+                onChange={e => setPExpAmt(e.target.value)}
+                className={cn(compact ? "h-11 flex-1" : "w-32")}
+              />
+              <Button
+                onClick={onAddPlanExpense}
+                disabled={!pExpCat || !pExpAmt}
+                className={cn(compact && "h-11")}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                {t.add}
+              </Button>
+            </div>
+          </div>
+          {planBudgets.length === 0 ? (
+            <EmptyHint>{t.planExpensesEmpty}</EmptyHint>
+          ) : (
+            <ul className="divide-y divide-border rounded-md border border-border/60 bg-card/30">
+              {planBudgets.map(b => renderRow(b, onRemoveExpense))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </>
   )
 }
 

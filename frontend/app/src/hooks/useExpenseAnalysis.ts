@@ -59,6 +59,8 @@ function normalizeConfig(
     budgets: raw?.budgets ?? [],
     overrides: raw?.overrides ?? [],
     excluded: raw?.excluded ?? [],
+    planBudgets: raw?.planBudgets ?? [],
+    planIncomes: raw?.planIncomes ?? [],
   }
 }
 
@@ -179,6 +181,52 @@ export function useExpenseAnalysisConfig() {
     [config, persist],
   )
 
+  const setPlanBudget = useCallback(
+    (category: ExpenseCategoryId, amount: number) =>
+      persist({
+        ...config,
+        planBudgets: [
+          ...(config.planBudgets ?? []).filter(b => b.category !== category),
+          { category, amount },
+        ],
+      }),
+    [config, persist],
+  )
+
+  const removePlanBudget = useCallback(
+    (category: ExpenseCategoryId) =>
+      persist({
+        ...config,
+        planBudgets: (config.planBudgets ?? []).filter(
+          b => b.category !== category,
+        ),
+      }),
+    [config, persist],
+  )
+
+  const setPlanIncome = useCallback(
+    (category: ExpenseCategoryId, amount: number) =>
+      persist({
+        ...config,
+        planIncomes: [
+          ...(config.planIncomes ?? []).filter(b => b.category !== category),
+          { category, amount },
+        ],
+      }),
+    [config, persist],
+  )
+
+  const removePlanIncome = useCallback(
+    (category: ExpenseCategoryId) =>
+      persist({
+        ...config,
+        planIncomes: (config.planIncomes ?? []).filter(
+          b => b.category !== category,
+        ),
+      }),
+    [config, persist],
+  )
+
   const recategorize = useCallback(
     (tx: AnalysisTx, category: ExpenseCategoryId) => {
       return persist({
@@ -196,6 +244,10 @@ export function useExpenseAnalysisConfig() {
     config,
     setBudget,
     removeBudget,
+    setPlanBudget,
+    removePlanBudget,
+    setPlanIncome,
+    removePlanIncome,
     recategorize,
     toggleExcluded: (txId: string) => {
       const excluded = config.excluded.includes(txId)

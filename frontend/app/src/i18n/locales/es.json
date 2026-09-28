@@ -3500,7 +3500,19 @@
       "add": "Añadir",
       "empty": "Pon presupuestos mensuales a las categorías que quieras vigilar.",
       "periodHint": "{amount}/mes × {months}",
-      "remove": "Quitar presupuesto"
+      "remove": "Quitar presupuesto",
+      "modeReal": "Real",
+      "modePlan": "Plan",
+      "planTitle": "Plan del mes que viene",
+      "planSubtitle": "proyecta tu mes que viene",
+      "planIncomes": "Ingresos planeados",
+      "planIncomesEmpty": "Añade las fuentes de ingreso que esperas tener el mes que viene.",
+      "planExpenses": "Gastos planeados",
+      "planExpensesEmpty": "Añade categorías de gasto para ver cuánto puedes permitirte.",
+      "planSummary": "{income} ingresos · {expenses} gastos · ahorrarías {savings} ({pct}%)",
+      "planSummaryDeficit": "{income} ingresos · {expenses} gastos · te pasarías {deficit}",
+      "planPctOfIncome": "{pct}% del ingreso",
+      "planIncomePlaceholder": "Fuente de ingreso"
     },
     "heatmap": {
       "title": "Mapa de calor del gasto diario",

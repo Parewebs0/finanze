@@ -213,4 +213,8 @@ export interface ExpenseAnalysisConfig {
   overrides: ExpenseCategoryOverride[]
   excluded: string[]
   splits?: ExpenseTxSplit[]
+  /** Projected budgets for the NEXT month (planning view). */
+  planBudgets?: ExpenseBudget[]
+  /** Projected incomes for the NEXT month (planning view). */
+  planIncomes?: ExpenseBudget[]
 }

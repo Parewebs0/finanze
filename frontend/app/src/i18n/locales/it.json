@@ -3482,7 +3482,19 @@
       "add": "Aggiungi",
       "empty": "Imposta budget mensili per le categorie che vuoi tenere d'occhio.",
       "periodHint": "{amount}/mese × {months}",
-      "remove": "Rimuovi budget"
+      "remove": "Rimuovi budget",
+      "modeReal": "Reale",
+      "modePlan": "Piano",
+      "planTitle": "Piano del mese prossimo",
+      "planSubtitle": "proietta il budget del mese prossimo",
+      "planIncomes": "Entrate previste",
+      "planIncomesEmpty": "Aggiungi le fonti di reddito che prevedi per il mese prossimo.",
+      "planExpenses": "Spese previste",
+      "planExpensesEmpty": "Aggiungi categorie di spesa per sapere quanto puoi permetterti.",
+      "planSummary": "{income} entrate · {expenses} spese · risparmieresti {savings} ({pct}%)",
+      "planSummaryDeficit": "{income} entrate · {expenses} spese · andresti oltre di {deficit}",
+      "planPctOfIncome": "{pct}% delle entrate",
+      "planIncomePlaceholder": "Fonte di reddito"
     },
     "heatmap": {
       "title": "Mappa di calore della spesa giornaliera",
