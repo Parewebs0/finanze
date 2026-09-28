@@ -19,7 +19,9 @@ Bizum y cenas
 
 Comercios habituales
 - Supermercados: Mercadona, Lidl, Carrefour, Consum, Aldi, Día = groceries.
-- Suscripciones digitales: Netflix, Spotify, iCloud, OpenAI, ChatGPT = subscriptions.
+- Suscripciones digitales: Netflix, Spotify, iCloud = subscriptions.
+- Herramientas de IA (ChatGPT, Claude, Cursor, OpenAI API, Copilot) = softwareAi.
+- Peluquería, barbería, cremas, estética = beauty.
 - Telefonía y recibos: Movistar, Vodafone, Orange, Digi, Lowi, recibo de luz/gas = utilities.
 - Viajes y reservas: Renfe, Iryo, Ouigo, Iberia, Vueling, Ryanair, Airbnb, Booking = travel.
 - Tiendas generales: Amazon, Zara, H&M, Ikea, Decathlon, Primor = shopping.
