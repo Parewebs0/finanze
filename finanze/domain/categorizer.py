@@ -88,14 +88,15 @@ CATEGORY_CRITERIA: dict[str, str] = {
     ),
     "subscriptions": (
         "Outflow only. Recurring digital subscriptions such as Netflix, "
-        "Spotify, iCloud or OpenAI."
+        "Spotify or iCloud. AI tools go in softwareAi."
     ),
     "leisure": (
         "Outflow only. Cinema, concerts, games, hobbies or other entertainment. "
         "Not sports clubs or travel."
     ),
     "health": (
-        "Outflow only. Pharmacy, clinic, dentist, health insurance or other healthcare."
+        "Outflow only. Pharmacy, clinic, dentist or other healthcare. "
+        "Insurance premiums go in insurance."
     ),
     "shopping": (
         "Outflow only. Shops and online stores such as Amazon, Zara, Ikea "
@@ -109,6 +110,21 @@ CATEGORY_CRITERIA: dict[str, str] = {
     "travel": (
         "Outflow only. Flights, hotels, Airbnb, Booking or other travel. "
         "Not everyday transport."
+    ),
+    "beauty": (
+        "Outflow only. Hairdresser, barber, cosmetics, creams, spa or beauty salon."
+    ),
+    "softwareAi": (
+        "Outflow only. AI and developer tools such as ChatGPT, Claude, "
+        "Cursor, GitHub Copilot, OpenAI API or similar software."
+    ),
+    "education": (
+        "Outflow only. Courses, books, training platforms or tuition."
+    ),
+    "pets": "Outflow only. Vet, pet food or other pet expenses.",
+    "insurance": (
+        "Outflow only. Home, car, health or life insurance premiums. "
+        "Not a medical visit (that is health)."
     ),
     "fees": (
         "Outflow only. Bank fees, commissions or card charges that are not a purchase."
