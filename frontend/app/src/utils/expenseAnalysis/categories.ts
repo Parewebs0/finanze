@@ -4,6 +4,12 @@ import type {
   ExpenseCategoryId,
 } from "@/types/expenseAnalysis"
 
+/**
+ * Category catalogue ported from Ledger's seed (db/index.ts), with stable ids
+ * instead of Spanish names so they can be translated. Two Finanze-specific
+ * categories were added for transaction types Ledger never saw: `interest`
+ * (TxType.INTEREST) and `fees` (TxType.FEE).
+ */
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   { id: "salary", group: "income", color: "#22c55e" },
   { id: "otherIncome", group: "income", color: "#16a34a" },
@@ -46,10 +52,12 @@ export function categoriesByGroup(group: CategoryGroup): ExpenseCategory[] {
   return EXPENSE_CATEGORIES.filter(c => c.group === group)
 }
 
+/** 50/30/20 "needs" set (Ledger: Vivienda, Suministros, Supermercado, Transporte, Salud). */
 export const NEEDS_CATEGORIES = new Set<ExpenseCategoryId>(
   EXPENSE_CATEGORIES.filter(c => c.need).map(c => c.id),
 )
 
+/** Fallback labels when i18n still doesn't have the key. */
 export const CATEGORY_LABELS: Record<ExpenseCategoryId, string> = {
   salary: "Nómina",
   otherIncome: "Otros ingresos",
