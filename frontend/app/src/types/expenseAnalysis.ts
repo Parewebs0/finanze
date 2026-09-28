@@ -60,7 +60,6 @@ export interface AnalysisTx {
   category: ExpenseCategoryId
   group: CategoryGroup
   excluded?: boolean
-  /** Bank movement this synthetic slice comes from. */
   parentId?: string
 }
 
@@ -213,5 +212,5 @@ export interface ExpenseAnalysisConfig {
   budgets: ExpenseBudget[]
   overrides: ExpenseCategoryOverride[]
   excluded: string[]
-  splits: ExpenseTxSplit[]
+  splits?: ExpenseTxSplit[]
 }
