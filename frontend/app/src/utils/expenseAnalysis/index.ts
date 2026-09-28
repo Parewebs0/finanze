@@ -23,6 +23,7 @@ export {
   investmentTotal,
 } from "./savingsMetrics"
 export { detectRecurring } from "./recurring"
+export { applySplits, parseSplitChildId, newSplitPart } from "./splits"
 export * from "./savings"
 export * from "./payroll"
 export * from "./sources"
