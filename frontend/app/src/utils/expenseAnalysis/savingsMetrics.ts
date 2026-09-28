@@ -8,7 +8,7 @@ import type {
 import { NEEDS_CATEGORIES } from "./categories"
 import { rangeAggregates as rawRangeAggregates } from "./calculations"
 
-const SAVING_CATS = new Set(["ownTransfer", "savingsInvestment"])
+const SAVING_CATS = new Set(["savingsInvestment"])
 
 const round2 = (n: number) => Math.round(n * 100) / 100 || 0
 
@@ -56,9 +56,6 @@ export function rule503020Slices(
     else if (NEEDS_CATEGORIES.has(c.category)) needs.push(item)
     else wants.push(item)
   }
-  if (agg.savings > 0) {
-    savings.push({ category: "liquid", value: round2(agg.savings) })
-  }
   const sort = (a: RuleSliceItem, b: RuleSliceItem) => b.value - a.value
   return {
     needs: needs.sort(sort),
@@ -78,7 +75,7 @@ export function rule503020(agg: RangeAggregates): Rule503020Result {
     else if (NEEDS_CATEGORIES.has(c.category)) needs += spent
     else wants += spent
   }
-  const savings = agg.savings + allocated
+  const savings = allocated
   const base = agg.income > 0 ? agg.income : needs + wants + savings || 1
   const bucket = (value: number, target: number) => ({
     value: round2(value),
