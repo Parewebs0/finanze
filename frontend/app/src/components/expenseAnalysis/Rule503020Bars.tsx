@@ -17,7 +17,7 @@ function fill(template: string, values: Record<string, string | number>) {
 const HINT = {
   needs: "Vivienda, suministros, supermercado, transporte y salud.",
   wants: "El resto de gastos (ocio, restaurantes, compras…).",
-  savings: "Traspasos propios, inversión y lo que queda en la cuenta.",
+  savings: "Solo lo clasificado como ahorro e inversión.",
 }
 
 export function Rule503020Bars({
