@@ -10,7 +10,6 @@ export {
   heatmapWeeks,
   monthGrid,
   normalizeConcept,
-  detectRecurring,
   budgetStatus,
   monthlyEvolution,
   topMerchants,
@@ -23,6 +22,7 @@ export {
   rule503020,
   investmentTotal,
 } from "./savingsMetrics"
+export { detectRecurring } from "./recurring"
 export * from "./savings"
 export * from "./payroll"
 export * from "./sources"
