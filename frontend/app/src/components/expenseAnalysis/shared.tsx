@@ -36,6 +36,7 @@ import {
   TrendingUp,
   Users,
   UtensilsCrossed,
+  Wallet,
   X,
   type LucideIcon,
 } from "lucide-react"
@@ -97,6 +98,7 @@ const CATEGORY_ICONS: Record<ExpenseCategoryId, LucideIcon> = {
   education: GraduationCap,
   pets: PawPrint,
   insurance: Shield,
+  cashWithdrawal: Wallet,
   fees: Receipt,
   uncategorized: CircleHelp,
   ownTransfer: ArrowLeftRight,
