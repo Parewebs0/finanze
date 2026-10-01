@@ -1342,6 +1342,24 @@
       "PARTIAL_COST_BASIS": "Algunas posiciones no tienen coste registrado, así que la ganancia solo cubre las que sí lo tienen."
     }
   },
+  "funds": {
+    "diversification": {
+      "title": "Diversificación",
+      "tabSectorial": "Sectorial",
+      "tabRegional": "Regional",
+      "tabAssetAllocation": "Asset allocation",
+      "tabCapitalization": "Capitalización",
+      "subtitleSectorial": "Exposición por sectores",
+      "subtitleRegional": "Exposición por regiones",
+      "subtitleAssetAllocation": "Desglose de asset allocation",
+      "subtitleCapitalization": "Exposición por capitalización bursátil",
+      "summary": "{count} fondos · {covered} con desglose",
+      "footer": "Datos a {date} · Suma ponderada por valor de mercado · {missing} fondos sin datos de exposición",
+      "loading": "Cargando diversificación…",
+      "emptyTitle": "Sin datos de exposición",
+      "emptyDescription": "No hemos podido obtener la diversificación para ninguno de tus fondos."
+    }
+  },
   "export": {
     "title": "Exportar e Importar",
     "intro": "Coordina cómo fluye la información entre Finanze y tus hojas.",

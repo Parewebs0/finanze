@@ -1343,6 +1343,24 @@
       "PARTIAL_COST_BASIS": "Some positions have no recorded cost, so the gain only covers those that do."
     }
   },
+  "funds": {
+    "diversification": {
+      "title": "Diversification",
+      "tabSectorial": "Sectoral",
+      "tabRegional": "Regional",
+      "tabAssetAllocation": "Asset allocation",
+      "tabCapitalization": "Capitalization",
+      "subtitleSectorial": "Exposure by sectors",
+      "subtitleRegional": "Exposure by regions",
+      "subtitleAssetAllocation": "Asset allocation breakdown",
+      "subtitleCapitalization": "Exposure by market capitalization",
+      "summary": "{count} funds · {covered} with breakdown",
+      "footer": "Data as of {date} · Weighted by market value · {missing} funds without exposure data",
+      "loading": "Loading diversification…",
+      "emptyTitle": "No exposure data",
+      "emptyDescription": "We couldn't retrieve the breakdown for any of your funds."
+    }
+  },
   "export": {
     "title": "Export & Import",
     "intro": "Coordinate how data flows between Finanze and your spreadsheets.",

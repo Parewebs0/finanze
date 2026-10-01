@@ -1235,6 +1235,23 @@ export interface InstrumentOverview {
   price?: number | null
 }
 
+export interface FundBreakdownItem {
+  label: string
+  long_pct: number
+  short_pct: number
+}
+
+export type FundBreakdownType =
+  | "stock-sector"
+  | "regional-exposure"
+  | "asset-allocation"
+  | "market-capitalization"
+
+export interface FundBreakdownSection {
+  type: FundBreakdownType
+  items: FundBreakdownItem[]
+}
+
 export interface InstrumentInfo {
   name?: string | null
   currency?: string | null
@@ -1243,6 +1260,8 @@ export interface InstrumentInfo {
   symbol?: string | null
   isin?: string | null
   issuer?: string | null
+  breakdown?: FundBreakdownSection[] | null
+  breakdown_date?: string | null
 }
 
 export interface InstrumentsResponse {
