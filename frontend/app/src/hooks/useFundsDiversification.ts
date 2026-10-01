@@ -27,6 +27,15 @@ export interface FundsDiversificationResult {
   missingBreakdownCount: number
   breakdownDate: string | null
   hasAnyData: boolean
+  eligibleFunds: EligibleFund[]
+  selectedIsins: Set<string>
+  setSelectedIsins: (isins: Set<string>) => void
+}
+
+export interface EligibleFund {
+  isin: string
+  name: string
+  value: number
 }
 
 const FUND_BREAKDOWN_TYPES: FundBreakdownType[] = [
@@ -72,6 +81,7 @@ export function useFundsDiversification(
   >({})
   const [breakdownDate, setBreakdownDate] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedIsins, setSelectedIsins] = useState<Set<string>>(new Set())
 
   const isinList = useMemo(() => {
     const set = new Set<string>()
@@ -80,6 +90,39 @@ export function useFundsDiversification(
     }
     return Array.from(set)
   }, [funds])
+
+  // Funds that have a usable breakdown are eligible for selection in the UI
+  const eligibleFunds = useMemo<EligibleFund[]>(() => {
+    return funds
+      .filter(fund => {
+        const isin = fund.isin
+        if (!isin) return false
+        const sections = breakdownByIsin[isin]
+        return Array.isArray(sections) && sections.length > 0
+      })
+      .map(fund => ({
+        isin: fund.isin as string,
+        name: fund.name || fund.isin || "",
+        value: fund.value || 0,
+      }))
+  }, [funds, breakdownByIsin])
+
+  // If a previously selected ISIN is no longer eligible, prune it
+  useEffect(() => {
+    const eligibleSet = new Set(eligibleFunds.map(f => f.isin))
+    setSelectedIsins(prev => {
+      let changed = false
+      const next = new Set<string>()
+      for (const isin of prev) {
+        if (eligibleSet.has(isin)) {
+          next.add(isin)
+        } else {
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [eligibleFunds])
 
   useEffect(() => {
     let cancelled = false
@@ -115,7 +158,19 @@ export function useFundsDiversification(
 
   const { tabs, withBreakdownCount, missingBreakdownCount, hasAnyData } =
     useMemo(() => {
-      const totalValue = funds.reduce(
+      const eligibleIsins = new Set(eligibleFunds.map(f => f.isin))
+      const activeIsins =
+        selectedIsins.size > 0
+          ? new Set(
+              Array.from(selectedIsins).filter(isin => eligibleIsins.has(isin)),
+            )
+          : eligibleIsins
+
+      const activeFunds = funds.filter(fund => {
+        const isin = fund.isin
+        return isin ? activeIsins.has(isin) : false
+      })
+      const totalValue = activeFunds.reduce(
         (sum, fund) => sum + (fund.value || 0),
         0,
       )
@@ -133,6 +188,10 @@ export function useFundsDiversification(
       for (const fund of funds) {
         const isin = fund.isin
         if (!isin) {
+          missing += 1
+          continue
+        }
+        if (!activeIsins.has(isin)) {
           missing += 1
           continue
         }
@@ -168,7 +227,7 @@ export function useFundsDiversification(
         missingBreakdownCount: missing,
         hasAnyData: anyData,
       }
-    }, [funds, breakdownByIsin])
+    }, [funds, breakdownByIsin, eligibleFunds, selectedIsins])
 
   return {
     isLoading,
@@ -178,5 +237,8 @@ export function useFundsDiversification(
     missingBreakdownCount,
     breakdownDate,
     hasAnyData,
+    eligibleFunds,
+    selectedIsins,
+    setSelectedIsins,
   }
 }

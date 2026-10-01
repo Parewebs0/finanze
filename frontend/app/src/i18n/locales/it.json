@@ -1357,7 +1357,10 @@
       "footer": "Dati al {date} · Somma ponderata per valore di mercato · {missing} fondi senza dati di esposizione",
       "loading": "Caricamento diversificazione…",
       "emptyTitle": "Nessun dato di esposizione",
-      "emptyDescription": "Non è stato possibile ottenere la diversificazione per nessuno dei tuoi fondi."
+      "emptyDescription": "Non è stato possibile ottenere la diversificazione per nessuno dei tuoi fondi.",
+      "fundsSelectorLabel": "Fondi",
+      "fundsSelectorAll": "Tutti i fondi con breakdown",
+      "fundsSelectorNone": "Nessun fondo selezionato"
     }
   },
   "export": {

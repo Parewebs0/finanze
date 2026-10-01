@@ -31,6 +31,7 @@ import { cn, fillTemplate } from "@/lib/utils"
 import { useI18n } from "@/i18n"
 import type { FundBreakdownType } from "@/types"
 import type { FundsDiversificationResult } from "@/hooks/useFundsDiversification"
+import { MultiSelect } from "@/components/ui/MultiSelect"
 
 interface FundsDiversificationPanelProps {
   result: FundsDiversificationResult
@@ -125,6 +126,19 @@ export function FundsDiversificationPanel({
     result.tabs.find(tab => tab.key === activeTab)?.rows ?? []
   const hasRows = activeRows.length > 0
 
+  const fundSelectorOptions = result.eligibleFunds.map(fund => ({
+    value: fund.isin,
+    label: fund.name,
+  }))
+
+  const selectedIsinList = Array.from(result.selectedIsins)
+  const isAllSelected = selectedIsinList.length === 0
+  const selectorValue = isAllSelected
+    ? fundSelectorOptions.map(opt => opt.value)
+    : selectedIsinList.filter(isin =>
+        fundSelectorOptions.some(opt => opt.value === isin),
+      )
+
   const tabClass = (tab: FundBreakdownType) =>
     cn(
       "px-0 pb-2.5 pt-1 text-sm font-medium transition-colors",
@@ -163,8 +177,8 @@ export function FundsDiversificationPanel({
     <Card>
       <CardContent className="pt-6">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <h3 className="text-base font-semibold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
+          <h3 className="text-sm sm:text-base font-semibold flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             {t.funds.diversification.title}
           </h3>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -178,7 +192,37 @@ export function FundsDiversificationPanel({
           </div>
         </div>
 
-        <div className="flex items-center gap-5 border-b border-border mb-5 overflow-x-auto overflow-y-hidden">
+        {fundSelectorOptions.length > 0 && (
+          <div className="mb-4 flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground font-medium">
+              {t.funds.diversification.fundsSelectorLabel}:
+            </span>
+            <MultiSelect
+              options={fundSelectorOptions}
+              value={selectorValue}
+              onChange={values => {
+                const eligibleSet = new Set(fundSelectorOptions.map(o => o.value))
+                if (
+                  values.length === 0 ||
+                  values.length === eligibleSet.size
+                ) {
+                  result.setSelectedIsins(new Set())
+                } else {
+                  result.setSelectedIsins(new Set(values))
+                }
+              }}
+              placeholder={
+                isAllSelected
+                  ? t.funds.diversification.fundsSelectorAll
+                  : t.funds.diversification.fundsSelectorNone
+              }
+              className="min-w-[180px] max-w-[320px] text-xs"
+              closeOnSelect={false}
+            />
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 sm:gap-5 border-b border-border mb-5 overflow-x-auto overflow-y-hidden whitespace-nowrap">
           {TAB_KEYS.map(tab => (
             <button
               key={tab}

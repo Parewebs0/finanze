@@ -1358,7 +1358,10 @@
       "footer": "Data as of {date} · Weighted by market value · {missing} funds without exposure data",
       "loading": "Loading diversification…",
       "emptyTitle": "No exposure data",
-      "emptyDescription": "We couldn't retrieve the breakdown for any of your funds."
+      "emptyDescription": "We couldn't retrieve the breakdown for any of your funds.",
+      "fundsSelectorLabel": "Funds",
+      "fundsSelectorAll": "All eligible funds",
+      "fundsSelectorNone": "No funds selected"
     }
   },
   "export": {
