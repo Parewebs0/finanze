@@ -894,12 +894,6 @@ function FundsInvestmentPageContent({
               </CardContent>
             </Card>
 
-            {diversification.totalFundCount > 0 && (
-              <motion.div variants={fadeListItem}>
-                <FundsDiversificationPanel result={diversification} />
-              </motion.div>
-            )}
-
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
                 <ArrowUpDown size={14} />
@@ -1432,6 +1426,12 @@ function FundsInvestmentPageContent({
           </div>
         )}
       </motion.div>
+
+      {diversification.totalFundCount > 0 && (
+        <motion.div variants={fadeListItem}>
+          <FundsDiversificationPanel result={diversification} />
+        </motion.div>
+      )}
     </motion.div>
   )
 }

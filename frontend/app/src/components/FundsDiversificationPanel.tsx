@@ -1,5 +1,28 @@
 import { useState } from "react"
-import { BarChart3, Package, Loader2 } from "lucide-react"
+import {
+  BarChart3,
+  Package,
+  Loader2,
+  Globe,
+  MapPin,
+  Banknote,
+  TrendingUp,
+  Factory,
+  Cpu,
+  Zap,
+  Building2,
+  ShoppingBag,
+  ShoppingCart,
+  HeartPulse,
+  Fuel,
+  Wheat,
+  Landmark,
+  Radio,
+  Home,
+  Briefcase,
+  Coins,
+  type LucideIcon,
+} from "lucide-react"
 import {
   Card,
   CardContent,
@@ -19,6 +42,76 @@ const TAB_KEYS: FundBreakdownType[] = [
   "asset-allocation",
   "market-capitalization",
 ]
+
+const REGION_ICONS: Record<string, LucideIcon> = {
+  "Estados Unidos": MapPin,
+  Japón: MapPin,
+  "Reino Unido": MapPin,
+  Canadá: MapPin,
+  "Zona Euro": MapPin,
+  Europa: MapPin,
+  "Asia Desarrollada": MapPin,
+  "Asia Emergente": MapPin,
+  Australasia: MapPin,
+  África: MapPin,
+  "Oriente Medio": MapPin,
+  Iberoamérica: MapPin,
+  "Europa Emergente": MapPin,
+  "Mercado Emergente": MapPin,
+  "País Desarrollado": Globe,
+  "No Clasificado": Globe,
+}
+
+const SECTOR_ICONS: Record<string, LucideIcon> = {
+  Technology: Cpu,
+  "Communication Services": Radio,
+  "Consumer Cyclical": ShoppingCart,
+  "Consumer Defensive": ShoppingBag,
+  Healthcare: HeartPulse,
+  Industrials: Factory,
+  "Real Estate": Home,
+  "Financial Services": Landmark,
+  "Basic Materials": Wheat,
+  Energy: Fuel,
+  Utilities: Zap,
+}
+
+const ASSET_ICONS: Record<string, LucideIcon> = {
+  Stock: TrendingUp,
+  Bond: Banknote,
+  Cash: Coins,
+  Other: Briefcase,
+  PreferredActions: Landmark,
+  Convertible: Coins,
+}
+
+const CAP_ICONS: Record<string, LucideIcon> = {
+  Giant: Building2,
+  Large: Building2,
+  Medium: Building2,
+  Small: Building2,
+  Micro: Building2,
+}
+
+const ICON_MAPS: Record<FundBreakdownType, Record<string, LucideIcon>> = {
+  "stock-sector": SECTOR_ICONS,
+  "regional-exposure": REGION_ICONS,
+  "asset-allocation": ASSET_ICONS,
+  "market-capitalization": CAP_ICONS,
+}
+
+const getCategoryIcon = (
+  type: FundBreakdownType,
+  label: string,
+): LucideIcon | null => {
+  const map = ICON_MAPS[type]
+  if (map[label]) return map[label]
+  const lower = label.toLowerCase()
+  for (const [key, icon] of Object.entries(map)) {
+    if (key.toLowerCase() === lower) return icon
+  }
+  return null
+}
 
 export function FundsDiversificationPanel({
   result,
@@ -85,7 +178,7 @@ export function FundsDiversificationPanel({
           </div>
         </div>
 
-        <div className="flex items-center gap-5 border-b border-border mb-5 overflow-x-auto">
+        <div className="flex items-center gap-5 border-b border-border mb-5 overflow-x-auto overflow-y-hidden">
           {TAB_KEYS.map(tab => (
             <button
               key={tab}
@@ -126,8 +219,16 @@ export function FundsDiversificationPanel({
                 return (
                   <div
                     key={row.key}
-                    className="grid grid-cols-[1fr_auto_180px] items-center gap-3 py-2.5 border-b border-border/40 last:border-0"
+                    className="grid grid-cols-[20px_1fr_auto_180px] items-center gap-3 py-2.5 border-b border-border/40 last:border-0"
                   >
+                    {(() => {
+                      const Icon = getCategoryIcon(activeTab, row.label)
+                      return Icon ? (
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <span className="h-4 w-4" aria-hidden="true" />
+                      )
+                    })()}
                     <span className="text-sm truncate">{row.label}</span>
                     <span className="text-sm font-bold tabular-nums">
                       {row.weightedPct.toFixed(1)}%
@@ -142,13 +243,6 @@ export function FundsDiversificationPanel({
                 )
               })}
             </div>
-
-            <p className="text-xs text-muted-foreground mt-4">
-              {fillTemplate(t.funds.diversification.footer, {
-                date: result.breakdownDate ?? "—",
-                missing: result.missingBreakdownCount,
-              })}
-            </p>
           </>
         )}
       </CardContent>
