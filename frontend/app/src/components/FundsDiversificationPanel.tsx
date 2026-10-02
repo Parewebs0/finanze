@@ -21,17 +21,25 @@ import {
   Home,
   Briefcase,
   Coins,
+  Check,
+  ChevronsUpDown,
   type LucideIcon,
 } from "lucide-react"
+import { Command as CommandPrimitive } from "cmdk"
 import {
   Card,
   CardContent,
 } from "@/components/ui/Card"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/Popover"
+import { Button as UIButton } from "@/components/ui/Button"
 import { cn, fillTemplate } from "@/lib/utils"
 import { useI18n } from "@/i18n"
 import type { FundBreakdownType } from "@/types"
 import type { FundsDiversificationResult } from "@/hooks/useFundsDiversification"
-import { MultiSelect } from "@/components/ui/MultiSelect"
 
 interface FundsDiversificationPanelProps {
   result: FundsDiversificationResult
@@ -194,28 +202,89 @@ export function FundsDiversificationPanel({
 
         {fundSelectorOptions.length > 0 && (
           <div className="mb-4">
-            <MultiSelect
-              options={fundSelectorOptions}
-              value={selectorValue}
-              onChange={values => {
-                const eligibleSet = new Set(fundSelectorOptions.map(o => o.value))
-                if (
-                  values.length === 0 ||
-                  values.length === eligibleSet.size
-                ) {
-                  result.setSelectedIsins(new Set())
-                } else {
-                  result.setSelectedIsins(new Set(values))
-                }
-              }}
-              placeholder={
-                isAllSelected
-                  ? t.funds.diversification.fundsSelectorAll
-                  : t.funds.diversification.fundsSelectorNone
-              }
-              className="w-full sm:w-[260px] text-xs"
-              closeOnSelect={false}
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <UIButton
+                  variant="outline"
+                  role="combobox"
+                  aria-label={t.funds.diversification.fundsSelectorLabel}
+                  className={cn(
+                    "w-full sm:w-[260px] justify-between text-xs font-normal",
+                    !isAllSelected && "text-foreground",
+                  )}
+                >
+                  <span className="truncate">
+                    {isAllSelected
+                      ? t.funds.diversification.fundsSelectorAll
+                      : t.funds.diversification.fundsSelectorSome.replace(
+                          "{count}",
+                          String(selectedIsinList.length),
+                        )}
+                  </span>
+                  <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-60" />
+                </UIButton>
+              </PopoverTrigger>
+              <PopoverContent
+                align="start"
+                sideOffset={4}
+                className="w-[var(--radix-popover-trigger-width)] p-0"
+              >
+                <CommandPrimitive>
+                  <CommandPrimitive.Input
+                    placeholder={t.funds.diversification.fundsSelectorSearch}
+                    className="flex h-9 w-full rounded-none border-b border-input px-3 text-xs outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                  <CommandPrimitive.List className="max-h-64 overflow-y-auto">
+                    <CommandPrimitive.Empty className="py-4 text-center text-xs text-muted-foreground">
+                      {t.funds.diversification.fundsSelectorNone}
+                    </CommandPrimitive.Empty>
+                    <CommandPrimitive.Group>
+                      {fundSelectorOptions.map(opt => {
+                        const isSelected = selectorValue.includes(opt.value)
+                        return (
+                          <CommandPrimitive.Item
+                            key={opt.value}
+                            value={opt.value}
+                            onSelect={currentValue => {
+                              const next = new Set(selectorValue)
+                              if (next.has(currentValue)) {
+                                next.delete(currentValue)
+                              } else {
+                                next.add(currentValue)
+                              }
+                              const eligibleSet = new Set(
+                                fundSelectorOptions.map(o => o.value),
+                              )
+                              if (
+                                next.size === 0 ||
+                                next.size === eligibleSet.size
+                              ) {
+                                result.setSelectedIsins(new Set())
+                              } else {
+                                result.setSelectedIsins(next)
+                              }
+                            }}
+                            className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-xs outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                          >
+                            <span
+                              className={cn(
+                                "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border",
+                                isSelected
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-input opacity-60",
+                              )}
+                            >
+                              {isSelected && <Check className="h-3 w-3" />}
+                            </span>
+                            <span className="truncate">{opt.label}</span>
+                          </CommandPrimitive.Item>
+                        )
+                      })}
+                    </CommandPrimitive.Group>
+                  </CommandPrimitive.List>
+                </CommandPrimitive>
+              </PopoverContent>
+            </Popover>
           </div>
         )}
 

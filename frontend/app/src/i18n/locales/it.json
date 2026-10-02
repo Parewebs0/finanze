@@ -1360,7 +1360,9 @@
       "emptyDescription": "Non è stato possibile ottenere la diversificazione per nessuno dei tuoi fondi.",
       "fundsSelectorLabel": "Fondi",
       "fundsSelectorAll": "Tutti i fondi con breakdown",
-      "fundsSelectorNone": "Nessun fondo selezionato"
+      "fundsSelectorNone": "Nessun risultato",
+      "fundsSelectorSome": "{count} selezionati",
+      "fundsSelectorSearch": "Cerca fondi…"
     }
   },
   "export": {

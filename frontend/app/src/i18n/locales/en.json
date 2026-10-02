@@ -1361,7 +1361,9 @@
       "emptyDescription": "We couldn't retrieve the breakdown for any of your funds.",
       "fundsSelectorLabel": "Funds",
       "fundsSelectorAll": "All eligible funds",
-      "fundsSelectorNone": "No funds selected"
+      "fundsSelectorNone": "No matches",
+      "fundsSelectorSome": "{count} selected",
+      "fundsSelectorSearch": "Search funds…"
     }
   },
   "export": {

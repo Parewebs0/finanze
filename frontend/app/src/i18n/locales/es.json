@@ -1360,7 +1360,9 @@
       "emptyDescription": "No hemos podido obtener la diversificación para ninguno de tus fondos.",
       "fundsSelectorLabel": "Fondos",
       "fundsSelectorAll": "Todos los fondos con desglose",
-      "fundsSelectorNone": "Ningún fondo seleccionado"
+      "fundsSelectorNone": "Sin coincidencias",
+      "fundsSelectorSome": "{count} seleccionados",
+      "fundsSelectorSearch": "Buscar fondos…"
     }
   },
   "export": {
