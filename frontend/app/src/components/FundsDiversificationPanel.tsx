@@ -10,7 +10,10 @@ import {
   Factory,
   Cpu,
   Zap,
+  Building,
   Building2,
+  Boxes,
+  Warehouse,
   ShoppingBag,
   ShoppingCart,
   HeartPulse,
@@ -96,10 +99,10 @@ const ASSET_ICONS: Record<string, LucideIcon> = {
 
 const CAP_ICONS: Record<string, LucideIcon> = {
   Giant: Building2,
-  Large: Building2,
-  Medium: Building2,
-  Small: Building2,
-  Micro: Building2,
+  Large: Building,
+  Medium: Warehouse,
+  Small: Boxes,
+  Micro: Package,
 }
 
 const ICON_MAPS: Record<FundBreakdownType, Record<string, LucideIcon>> = {
