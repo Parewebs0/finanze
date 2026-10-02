@@ -1342,6 +1342,29 @@
       "PARTIAL_COST_BASIS": "Alcune posizioni non hanno un costo registrato, quindi il guadagno copre solo quelle che ce l'hanno."
     }
   },
+  "funds": {
+    "diversification": {
+      "title": "Diversificazione",
+      "tabSectorial": "Settoriale",
+      "tabRegional": "Regionale",
+      "tabAssetAllocation": "Asset allocation",
+      "tabCapitalization": "Capitalizzazione",
+      "subtitleSectorial": "Esposizione per settori",
+      "subtitleRegional": "Esposizione per regioni",
+      "subtitleAssetAllocation": "Composizione dell'asset allocation",
+      "subtitleCapitalization": "Esposizione per capitalizzazione di mercato",
+      "summary": "{count} fondi · {covered} con breakdown",
+      "footer": "Dati al {date} · Somma ponderata per valore di mercato · {missing} fondi senza dati di esposizione",
+      "loading": "Caricamento diversificazione…",
+      "emptyTitle": "Nessun dato di esposizione",
+      "emptyDescription": "Non è stato possibile ottenere la diversificazione per nessuno dei tuoi fondi.",
+      "fundsSelectorLabel": "Fondi",
+      "fundsSelectorAll": "Tutti i fondi con breakdown",
+      "fundsSelectorNone": "Nessun risultato",
+      "fundsSelectorSome": "{count} selezionati",
+      "fundsSelectorSearch": "Cerca fondi…"
+    }
+  },
   "export": {
     "title": "Esporta e Importa",
     "intro": "Coordina come i dati fluiscono tra Finanze e i tuoi fogli di calcolo.",
