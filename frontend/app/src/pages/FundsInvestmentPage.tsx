@@ -13,6 +13,8 @@ import { getColorForName, getCurrencySymbol, cn } from "@/lib/utils"
 import { fadeListContainer, fadeListItem } from "@/lib/animations"
 import { InvestmentDistributionChart } from "@/components/InvestmentDistributionChart"
 import { InvestmentEvolutionTimeline } from "@/components/InvestmentEvolutionTimeline"
+import { FundsDiversificationPanel } from "@/components/FundsDiversificationPanel"
+import { useFundsDiversification } from "@/hooks/useFundsDiversification"
 import type { OrbitBubbleItem } from "@/components/DonutOrbitBubbles"
 import { formatCurrency, formatGainLoss } from "@/lib/formatters"
 import { Sensitive } from "@/components/ui/Sensitive"
@@ -613,6 +615,8 @@ function FundsInvestmentPageContent({
       0,
     )
   }, [displayPositions])
+
+  const diversification = useFundsDiversification(displayPositions)
 
   // refs map for scrolling/highlighting
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -1422,6 +1426,12 @@ function FundsInvestmentPageContent({
           </div>
         )}
       </motion.div>
+
+      {diversification.totalFundCount > 0 && (
+        <motion.div variants={fadeListItem}>
+          <FundsDiversificationPanel result={diversification} />
+        </motion.div>
+      )}
     </motion.div>
   )
 }

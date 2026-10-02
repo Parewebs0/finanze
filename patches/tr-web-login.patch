@@ -1,0 +1,37 @@
+--- a/finanze/infrastructure/client/entity/financial/tr/trade_republic_client.py
++++ b/finanze/infrastructure/client/entity/financial/tr/trade_republic_client.py
+@@ -171,7 +171,7 @@
+ 
+         if waf_token:
+             self._tr_api._websession.headers["x-aws-waf-token"] = waf_token
+-        else:
++        elif not use_v2:
+             return EntityLoginResult(
+                 LoginResultCode.MANUAL_LOGIN,
+                 details={"phone": phone, "password": pin},
+--- a/finanze/infrastructure/client/entity/financial/tr/trade_republic_fetcher.py
++++ b/finanze/infrastructure/client/entity/financial/tr/trade_republic_fetcher.py
+@@ -200,7 +200,7 @@
+         if two_factor:
+             process_id, code = two_factor.process_id, two_factor.code
+ 
+-        use_v2 = (login_params.feature_flags or {}).get("TR_V2_AUTH_API") == FFStatus.ON
++        use_v2 = True
+ 
+         if process_id and not code:
+             return await self._client.complete_login(process_id, waf_token)
+--- a/frontend/app/src/pages/EntityIntegrationsPage.tsx
++++ b/frontend/app/src/pages/EntityIntegrationsPage.tsx
+@@ -261,7 +261,11 @@
+   }
+ 
+   const handleLogin = (entity: any) => {
+-    if (entity.setup_login_type === EntitySetupLoginType.MANUAL) {
++    const tradeRepublicId = "e0000000-0000-0000-0000-000000000003"
++    if (
++      entity.setup_login_type === EntitySetupLoginType.MANUAL &&
++      entity.id !== tradeRepublicId
++    ) {
+       setTimeout(() => {
+         startExternalLogin(entity)
+       }, 100)

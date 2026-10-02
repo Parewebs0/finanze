@@ -32,6 +32,19 @@ class InstrumentOverview:
 
 
 @dataclass
+class FundBreakdownItem:
+    label: str
+    long_pct: float
+    short_pct: float
+
+
+@dataclass
+class FundBreakdownSection:
+    type: str  # "stock-sector" | "regional-exposure" | "asset-allocation" | "market-capitalization"
+    items: list[FundBreakdownItem]
+
+
+@dataclass
 class InstrumentInfo:
     name: str
     currency: str
@@ -39,3 +52,5 @@ class InstrumentInfo:
     price: Dezimal
     symbol: Optional[str] = None
     issuer: Optional[str] = None
+    breakdown: Optional[list[FundBreakdownSection]] = None
+    breakdown_date: Optional[str] = None

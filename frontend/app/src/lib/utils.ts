@@ -49,3 +49,13 @@ export function getColorForName(name?: string): string {
   const colorIndex = Math.abs(hash) % colors.length
   return colors[colorIndex]
 }
+
+export function fillTemplate(
+  template: string,
+  tokens: Record<string, string | number>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => {
+    const value = tokens[key]
+    return value === undefined || value === null ? `{${key}}` : String(value)
+  })
+}

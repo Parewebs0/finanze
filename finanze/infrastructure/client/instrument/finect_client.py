@@ -6,6 +6,8 @@ from typing import Optional
 from aiocache import cached, Cache
 from domain.dezimal import Dezimal
 from domain.instrument import (
+    FundBreakdownItem,
+    FundBreakdownSection,
     InstrumentDataRequest,
     InstrumentInfo,
     InstrumentOverview,
@@ -284,10 +286,57 @@ class FinectClient:
             )
             return None
 
+        breakdown = self._parse_breakdown(item)
+        breakdown_date = item.get("breakdownDate") or None
+
         return InstrumentInfo(
             name=name,
             currency=currency,
             type=instrument_type,
             price=price,
             symbol=None,
+            breakdown=breakdown,
+            breakdown_date=breakdown_date,
         )
+
+    @staticmethod
+    def _parse_breakdown(item: dict) -> list[FundBreakdownSection]:
+        raw_breakdown = item.get("breakdown")
+        if not isinstance(raw_breakdown, list):
+            return []
+        sections: list[FundBreakdownSection] = []
+        for section in raw_breakdown:
+            if not isinstance(section, dict):
+                continue
+            section_type = section.get("type")
+            if not isinstance(section_type, str):
+                continue
+            raw_items = section.get("items")
+            if not isinstance(raw_items, list):
+                continue
+            items: list[FundBreakdownItem] = []
+            for raw_item in raw_items:
+                if not isinstance(raw_item, dict):
+                    continue
+                label = raw_item.get("drawer")
+                values = raw_item.get("values")
+                if not isinstance(label, str) or not isinstance(values, dict):
+                    continue
+                try:
+                    long_pct = float(values.get("long", 0) or 0)
+                    short_pct = float(values.get("short", 0) or 0)
+                except (TypeError, ValueError):
+                    continue
+                if long_pct <= 0 and short_pct <= 0:
+                    continue
+                items.append(
+                    FundBreakdownItem(
+                        label=label,
+                        long_pct=long_pct,
+                        short_pct=short_pct,
+                    )
+                )
+            if not items:
+                continue
+            sections.append(FundBreakdownSection(type=section_type, items=items))
+        return sections
