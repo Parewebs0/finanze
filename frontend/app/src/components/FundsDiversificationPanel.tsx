@@ -193,10 +193,7 @@ export function FundsDiversificationPanel({
         </div>
 
         {fundSelectorOptions.length > 0 && (
-          <div className="mb-4 flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-muted-foreground font-medium">
-              {t.funds.diversification.fundsSelectorLabel}:
-            </span>
+          <div className="mb-4">
             <MultiSelect
               options={fundSelectorOptions}
               value={selectorValue}
@@ -216,19 +213,19 @@ export function FundsDiversificationPanel({
                   ? t.funds.diversification.fundsSelectorAll
                   : t.funds.diversification.fundsSelectorNone
               }
-              className="min-w-[180px] max-w-[320px] text-xs"
+              className="w-full sm:w-[260px] text-xs"
               closeOnSelect={false}
             />
           </div>
         )}
 
-        <div className="flex items-center gap-3 sm:gap-5 border-b border-border mb-5 overflow-x-auto overflow-y-hidden whitespace-nowrap">
+        <div className="flex items-center gap-2 sm:gap-5 border-b border-border mb-5 overflow-x-auto overflow-y-hidden whitespace-nowrap">
           {TAB_KEYS.map(tab => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={tabClass(tab)}
+              className={cn(tabClass(tab), "text-xs sm:text-sm shrink-0")}
             >
               {tabLabel(tab)}
             </button>
@@ -263,21 +260,29 @@ export function FundsDiversificationPanel({
                 return (
                   <div
                     key={row.key}
-                    className="grid grid-cols-[20px_1fr_auto_180px] items-center gap-3 py-2.5 border-b border-border/40 last:border-0"
+                    className="py-2.5 border-b border-border/40 last:border-0"
                   >
-                    {(() => {
-                      const Icon = getCategoryIcon(activeTab, row.label)
-                      return Icon ? (
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <span className="h-4 w-4" aria-hidden="true" />
-                      )
-                    })()}
-                    <span className="text-sm truncate">{row.label}</span>
-                    <span className="text-sm font-bold tabular-nums">
-                      {row.weightedPct.toFixed(1)}%
-                    </span>
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div className="grid grid-cols-[20px_minmax(0,1fr)_auto] sm:grid-cols-[20px_minmax(0,1fr)_auto_180px] items-center gap-3">
+                      {(() => {
+                        const Icon = getCategoryIcon(activeTab, row.label)
+                        return Icon ? (
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <span className="h-4 w-4" aria-hidden="true" />
+                        )
+                      })()}
+                      <span className="text-sm truncate">{row.label}</span>
+                      <span className="text-sm font-bold tabular-nums">
+                        {row.weightedPct.toFixed(1)}%
+                      </span>
+                      <div className="hidden sm:block h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${widthPct}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="sm:hidden mt-2 ml-[32px] h-1.5 rounded-full bg-muted overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full transition-all"
                         style={{ width: `${widthPct}%` }}
