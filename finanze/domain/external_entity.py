@@ -27,7 +27,7 @@ class ExternalEntity:
     payload: Optional[dict] = None
 
 
-EXTERNAL_ENTITY_FEATURES = [Feature.POSITION]
+EXTERNAL_ENTITY_FEATURES = [Feature.POSITION, Feature.TRANSACTIONS]
 
 
 @dataclass

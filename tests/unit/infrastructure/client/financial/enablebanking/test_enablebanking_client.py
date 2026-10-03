@@ -202,3 +202,54 @@ class TestRequests:
 
         with pytest.raises(TooManyRequests):
             await client.get_account_balances("acc-1")
+
+
+class TestErrorDetail:
+    @pytest.mark.asyncio
+    async def test_start_auth_error_surfaces_enable_banking_reason(
+        self, rsa_private_key_pem
+    ):
+        body = (
+            '{"message": "Redirect URI not allowed", "code": 400, '
+            '"error": "REDIRECT_URI_NOT_ALLOWED", '
+            '"detail": {"redirect_url": "https://finanze.me/eb/v1/entity/callback/"}}'
+        )
+        response = FakeResponse(ok=False, status=400, text_data=body)
+        client = _make_client(response, rsa_private_key_pem)
+
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await client.start_auth(
+                aspsp_name="Santander",
+                aspsp_country="ES",
+                state="state-1",
+                valid_until="2026-12-26T12:00:00+01:00",
+            )
+
+        message = str(exc_info.value)
+        assert "REDIRECT_URI_NOT_ALLOWED" in message
+        assert "Redirect URI not allowed" in message
+        assert "finanze.me/eb/v1/entity/callback" in message
+        # callers still rely on the original status code
+        assert exc_info.value.response.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_error_without_body_keeps_original_exception(
+        self, rsa_private_key_pem
+    ):
+        response = FakeResponse(ok=False, status=400, text_data="")
+        client = _make_client(response, rsa_private_key_pem)
+
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await client.create_session("code")
+
+        assert str(exc_info.value) == "error"
+
+    @pytest.mark.asyncio
+    async def test_non_json_error_body_is_truncated(self, rsa_private_key_pem):
+        response = FakeResponse(ok=False, status=502, text_data="x" * 2000)
+        client = _make_client(response, rsa_private_key_pem)
+
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await client.get_application()
+
+        assert len(str(exc_info.value)) < 600

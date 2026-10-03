@@ -261,7 +261,11 @@ export default function EntityIntegrationsPage() {
   }
 
   const handleLogin = (entity: any) => {
-    if (entity.setup_login_type === EntitySetupLoginType.MANUAL) {
+    const tradeRepublicId = "e0000000-0000-0000-0000-000000000003"
+    if (
+      entity.setup_login_type === EntitySetupLoginType.MANUAL &&
+      entity.id !== tradeRepublicId
+    ) {
       setTimeout(() => {
         startExternalLogin(entity)
       }, 100)

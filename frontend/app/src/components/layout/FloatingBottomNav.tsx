@@ -14,11 +14,11 @@ import {
   TrendingUp,
   ArrowLeftRight,
   Calculator,
-  CalendarCog,
   Blocks,
   Settings,
   FileUp,
   MoreVertical,
+  ChartPie,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useI18n } from "@/i18n"
@@ -104,18 +104,14 @@ export function FloatingBottomNav() {
   const handleTabPointerDown = useCallback(
     (label: string) => (event: ReactPointerEvent<HTMLButtonElement>) => {
       if (collapsed) return
-
       if (event.pointerType === "mouse" && event.button !== 0) return
-
       didLongPressRef.current = false
       isPressingRef.current = true
       pressStartRef.current = { x: event.clientX, y: event.clientY }
       clearLongPressTimer()
-
       const target = event.currentTarget
       longPressTimerRef.current = setTimeout(() => {
         if (!isPressingRef.current) return
-
         const rect = target.getBoundingClientRect()
         didLongPressRef.current = true
         setPressTip({
@@ -134,7 +130,6 @@ export function FloatingBottomNav() {
       if (!isPressingRef.current) return
       const start = pressStartRef.current
       if (!start) return
-
       const dx = event.clientX - start.x
       const dy = event.clientY - start.y
       if (Math.hypot(dx, dy) > LONG_PRESS_MOVE_TOLERANCE) {
@@ -146,12 +141,8 @@ export function FloatingBottomNav() {
 
   useEffect(() => {
     setIndicatorReady(false)
-    if (!collapsed) {
-      setDisableIndicatorAnim(true)
-    }
-    if (collapsed) {
-      setMoreOpen(false)
-    }
+    if (!collapsed) setDisableIndicatorAnim(true)
+    if (collapsed) setMoreOpen(false)
   }, [collapsed])
 
   useEffect(() => {
@@ -210,10 +201,10 @@ export function FloatingBottomNav() {
       },
       {
         kind: "route",
-        key: "management",
-        path: "/management",
-        label: t.management.title,
-        icon: <CalendarCog size={22} />,
+        key: "analysis",
+        path: "/analysis",
+        label: t.expenseAnalysis.navLabel,
+        icon: <ChartPie size={22} />,
       },
       {
         kind: "route",
@@ -238,13 +229,11 @@ export function FloatingBottomNav() {
       return item.path === location.pathname
     })
     if (exactMatch !== -1) return exactMatch
-
     const prefixMatch = navItems.findIndex(item => {
       if (item.kind !== "route") return false
       return item.path !== "/" && location.pathname.startsWith(item.path)
     })
     if (prefixMatch !== -1) return prefixMatch
-
     const investmentsIndex = navItems.findIndex(
       item => item.kind === "route" && item.path === "/investments",
     )
@@ -255,22 +244,20 @@ export function FloatingBottomNav() {
     ) {
       return investmentsIndex
     }
-
     const moreIndex = navItems.findIndex(item => item.kind === "more")
     if (moreIndex !== -1) {
       if (
         location.pathname.startsWith("/settings") ||
-        location.pathname.startsWith("/export")
+        location.pathname.startsWith("/export") ||
+        location.pathname.startsWith("/management")
       ) {
         return moreIndex
       }
     }
-
     return moreIndex !== -1 ? moreIndex : 0
   }, [navItems, location.pathname])
 
   const activeIndex = getActiveIndex()
-
   const tabsContainerRef = useRef<HTMLDivElement>(null)
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [indicatorStyle, setIndicatorStyle] = useState({ x: 0, width: 0 })
@@ -280,22 +267,17 @@ export function FloatingBottomNav() {
     const container = tabsContainerRef.current
     const button = buttonRefs.current[activeIndex]
     if (!container || !button) return
-
     const activeItem = navItems[activeIndex]
     if (!activeItem) return
-
     const bubble = PILL_HEIGHT - INDICATOR_INSET * 2
-
     const centerX = button.offsetLeft + button.offsetWidth / 2
     const unclampedX = centerX - bubble / 2
     const maxX = Math.max(0, container.clientWidth - bubble)
     const x = Math.min(Math.max(0, unclampedX), maxX)
-
     setIndicatorStyle(prev => {
       if (prev.x === x && prev.width === bubble) return prev
       return { x, width: bubble }
     })
-
     setIndicatorReady(true)
   }, [activeIndex, navItems, navScale])
 
@@ -307,15 +289,11 @@ export function FloatingBottomNav() {
   }, [collapsed, activeIndex, measureAndUpdateIndicator])
 
   useLayoutEffect(() => {
-    if (!collapsed) {
-      measureAndUpdateIndicator()
-    }
+    if (!collapsed) measureAndUpdateIndicator()
   }, [collapsed, navScale, measureAndUpdateIndicator])
 
   const handlePillPress = () => {
-    if (collapsed) {
-      setCollapsed(false)
-    }
+    if (collapsed) setCollapsed(false)
   }
 
   const handleNavigation = (path: string) => {
@@ -329,7 +307,6 @@ export function FloatingBottomNav() {
 
   const collapsedDotsWidth =
     navItems.length * DOT_SIZE + (navItems.length - 1) * DOT_GAP
-
   const pillWidth = collapsed
     ? Math.max(PILL_HEIGHT_COLLAPSED, COLLAPSED_INSET * 2 + collapsedDotsWidth)
     : EXPANDED_INSET * 2 +
@@ -407,10 +384,7 @@ export function FloatingBottomNav() {
                       bottom: INDICATOR_INSET,
                       left: 0,
                     }}
-                    animate={{
-                      x: indicatorStyle.x,
-                      width: indicatorStyle.width,
-                    }}
+                    animate={{ x: indicatorStyle.x, width: indicatorStyle.width }}
                     transition={
                       disableIndicatorAnim
                         ? { duration: 0 }
@@ -457,9 +431,7 @@ export function FloatingBottomNav() {
                             "focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
                           )}
                           aria-label={item.label}
-                          aria-current={
-                            index === activeIndex ? "page" : undefined
-                          }
+                          aria-current={index === activeIndex ? "page" : undefined}
                         >
                           {item.icon}
                           {alertColor && (

@@ -5,6 +5,7 @@ import DashboardPage from "./pages/DashboardPage"
 import SettingsPage from "./pages/SettingsPage"
 import ExportPage from "./pages/ExportPage"
 import TransactionsPage from "./pages/TransactionsPage"
+import ExpenseAnalysisPage from "./pages/ExpenseAnalysisPage"
 import StocksInvestmentPage from "./pages/StocksInvestmentPage"
 import FundsInvestmentPage from "./pages/FundsInvestmentPage"
 import DepositsInvestmentPage from "./pages/DepositsInvestmentPage"
@@ -148,6 +149,7 @@ function App() {
               />
               <Route path="/entities" element={<EntityIntegrationsPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
+              <Route path="/analysis" element={<ExpenseAnalysisPage />} />
               <Route path="/investments" element={<InvestmentsPage />} />
               <Route
                 path="/investments/stocks-etfs"

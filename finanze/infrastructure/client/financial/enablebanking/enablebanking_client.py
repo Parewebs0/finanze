@@ -1,3 +1,4 @@
+import json as jsonlib
 import logging
 import time
 from typing import Optional
@@ -15,6 +16,37 @@ from domain.exception.exceptions import (
 )
 from domain.external_integration import ExternalIntegrationPayload
 from infrastructure.client.http.http_session import get_http_session
+
+
+_MAX_ERROR_DETAIL_LENGTH = 500
+
+
+def _describe_error_body(body: Optional[str]) -> Optional[str]:
+    """Human readable summary of an Enable Banking ErrorResponse
+    ({"message", "code", "error", "detail"}); None if nothing useful."""
+    if not body:
+        return None
+    try:
+        data = jsonlib.loads(body)
+    except ValueError:
+        return body.strip()[:_MAX_ERROR_DETAIL_LENGTH] or None
+    if not isinstance(data, dict):
+        return str(data)[:_MAX_ERROR_DETAIL_LENGTH]
+
+    parts = []
+    error_code = data.get("error")
+    if error_code:
+        parts.append(str(error_code))
+    message = data.get("message")
+    if message:
+        parts.append(str(message))
+    detail = data.get("detail")
+    if detail:
+        parts.append(
+            detail if isinstance(detail, str) else jsonlib.dumps(detail, default=str)
+        )
+    summary = " - ".join(parts)
+    return summary[:_MAX_ERROR_DETAIL_LENGTH] or None
 
 
 class EnableBankingClient(ConnectableIntegration):
@@ -85,6 +117,8 @@ class EnableBankingClient(ConnectableIntegration):
         return {
             "Authorization": f"Bearer {self._build_jwt()}",
             "Accept": "application/json",
+            "Psu-Ip-Address": "127.0.0.1",
+            "Psu-User-Agent": "Finanze/1.0",
         }
 
     async def _request(
@@ -116,7 +150,17 @@ class EnableBankingClient(ConnectableIntegration):
             self._log.error(
                 "Error calling Enable Banking %s: %s %s", url, response.status, body
             )
-            response.raise_for_status()
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                detail = _describe_error_body(body)
+                if not detail:
+                    raise
+                raise httpx.HTTPStatusError(
+                    f"{e} | Enable Banking: {detail}",
+                    request=e.request,
+                    response=e.response,
+                ) from e
 
         return await response.json()
 
@@ -153,7 +197,11 @@ class EnableBankingClient(ConnectableIntegration):
         psu_type: str = DEFAULT_PSU_TYPE,
     ) -> dict:
         body = {
-            "access": {"valid_until": valid_until},
+            "access": {
+                "valid_until": valid_until,
+                "balances": True,
+                "transactions": True,
+            },
             "aspsp": {"name": aspsp_name, "country": aspsp_country},
             "state": state,
             "redirect_url": self.REDIRECT_URL,
@@ -169,6 +217,21 @@ class EnableBankingClient(ConnectableIntegration):
 
     async def get_account_balances(self, account_uid: str) -> dict:
         return await self._request("GET", f"/accounts/{account_uid}/balances")
+
+    async def get_account_transactions(
+        self,
+        account_uid: str,
+        date_from: Optional[str] = None,
+        continuation_key: Optional[str] = None,
+    ) -> dict:
+        params: dict = {}
+        if date_from:
+            params["date_from"] = date_from
+        if continuation_key:
+            params["continuation_key"] = continuation_key
+        return await self._request(
+            "GET", f"/accounts/{account_uid}/transactions", params=params or None
+        )
 
     async def delete_session(self, session_id: str) -> dict:
         return await self._request("DELETE", f"/sessions/{session_id}")

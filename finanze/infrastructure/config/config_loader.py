@@ -11,6 +11,7 @@ from application.ports.datasource_backup_port import Backupable
 from domain.exception.exceptions import NoUserLogged
 from domain.settings import Settings
 from domain.user import User
+from infrastructure.categorizer.store import CategorizerStore
 from infrastructure.config.base_config import BASE_CONFIG, CURRENT_VERSION
 from infrastructure.config.config_migrator import ConfigMigrator
 
@@ -23,15 +24,18 @@ class ConfigLoader(ConfigPort, Backupable):
         self._log = logging.getLogger(__name__)
         self._migrator = ConfigMigrator()
         self._cache: Settings | None = None
+        self.categorizer = CategorizerStore()
 
     async def disconnect(self):
         self._log.debug("Disconnecting config loader")
         self._config_file = None
         self._cache = None
+        self.categorizer.disconnect()
 
     async def connect(self, user: User):
         self._log.debug("Connecting config loader")
         self._config_file = str(user.path / CONFIG_NAME)
+        self.categorizer.connect(user.path)
         await self._check_or_create_default_config()
         await self.load()
 

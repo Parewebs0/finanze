@@ -162,6 +162,40 @@ class DataConfig:
 
 
 @dataclass
+class ExpenseCategoryRule:
+    """User categorization rule for the expense analysis.
+
+    ``pattern`` is a case-insensitive regex matched against the transaction
+    concept. ``amount`` (signed, e.g. -50) restricts the rule to that exact
+    amount."""
+
+    pattern: str
+    category: str
+    amount: Optional[float] = None
+
+
+@dataclass
+class ExpenseBudget:
+    category: str
+    amount: float
+
+
+@dataclass
+class ExpenseCategoryOverride:
+    txId: str
+    category: str
+
+
+@dataclass
+class ExpenseAnalysisConfig:
+    rules: list[ExpenseCategoryRule] = field(default_factory=list)
+    budgets: list[ExpenseBudget] = field(default_factory=list)
+    overrides: list[ExpenseCategoryOverride] = field(default_factory=list)
+    # Transaction ids left out of every analysis total and chart.
+    excluded: list[str] = field(default_factory=list)
+
+
+@dataclass
 class Settings:
     lastUpdate: str
     version: int = CURRENT_VERSION
@@ -170,3 +204,6 @@ class Settings:
     export: ExportConfig = field(default_factory=ExportConfig)
     importing: ImportConfig = field(default_factory=ImportConfig)
     assets: AssetConfig = field(default_factory=AssetConfig)
+    expenseAnalysis: ExpenseAnalysisConfig = field(
+        default_factory=ExpenseAnalysisConfig
+    )

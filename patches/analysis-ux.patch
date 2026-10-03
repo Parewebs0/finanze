@@ -1,0 +1,5 @@
+Move CategorizerCard below the analysis panels and collapse it.
+
+Desktop: remove the card under the header; add it after RulesEditor.
+Empty state: card after the empty Card, not before.
+Mobile: same; inside planning tab after RulesEditor.

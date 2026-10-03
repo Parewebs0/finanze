@@ -3414,5 +3414,207 @@
     "resetConfirmMessage": "Sei sicuro di voler ripristinare tutte le impostazioni avanzate ai valori predefiniti?",
     "resetConfirmWarning": "L'app si riavvierà dopo il ripristino.",
     "availableAfterLoading": "Disponibile dopo il caricamento"
+  },
+  "expenseAnalysis": {
+    "title": "Analisi delle spese",
+    "navLabel": "Analisi",
+    "refresh": "Aggiorna",
+    "source": {
+      "placeholder": "Seleziona una banca"
+    },
+    "categorizer": {
+      "title": "Categorizza con Jev",
+      "description": "Collega Jev dall'app. La chiave resta in questo profilo locale. OpenRouter usa il modello ~typesafe/jev-latest. Diretto usa Jev su api.typesafe.ai.",
+      "openrouter": "OpenRouter",
+      "direct": "Jev diretto",
+      "apiKey": "Chiave API",
+      "openrouterHint": "Chiave OpenRouter",
+      "directHint": "Chiave TypeSafe",
+      "connect": "Collega",
+      "checking": "Verifica della chiave…",
+      "connected": "Jev è collegato",
+      "disconnect": "Scollega",
+      "using": "{provider} · {hint}",
+      "onlyUncategorized": "Solo i movimenti senza categoria di questo periodo",
+      "recategorize": "Ricategorizza",
+      "working": "Categorizzazione…",
+      "done": "Aggiornati {n} movimenti"
+    },
+    "presets": {
+      "month": "Questo mese",
+      "prevMonth": "Mese scorso",
+      "3m": "3 mesi",
+      "6m": "6 mesi",
+      "year": "Anno",
+      "all": "Tutto",
+      "custom": "Personalizzato"
+    },
+    "from": "Da",
+    "to": "A",
+    "activeView": "Vista attiva",
+    "day": "Giorno {day}",
+    "fromTo": "{from} – {to}",
+    "viewTransactions": "Vedi movimenti",
+    "backToFullPeriod": "Torna al periodo completo",
+    "kpis": {
+      "income": "Entrate",
+      "expenses": "Spese",
+      "savingsRate": "Tasso di risparmio",
+      "savingsRateSub": "{saved} risparmiati + {invested} investiti",
+      "avgDailySpend": "Spesa media giornaliera",
+      "vsPrevious": "vs periodo precedente"
+    },
+    "cashflow": {
+      "title": "Cashflow giornaliero",
+      "hintDesktop": "Clic su un giorno · trascina per selezionare un intervallo",
+      "hintMobile": "Tocca un giorno per vederne i movimenti",
+      "income": "Entrata",
+      "expense": "Spesa"
+    },
+    "distribution": {
+      "title": "Distribuzione della spesa",
+      "hint": "Clic su una fetta per filtrare cashflow e mappa di calore",
+      "hintMobile": "Tocca una categoria per filtrare la pagina"
+    },
+    "ranking": {
+      "title": "Classifica per categoria",
+      "total": "{amount} totale",
+      "times": "{n}×"
+    },
+    "rule": {
+      "title": "Regola 50/30/20",
+      "subtitle": "necessità / desideri / risparmio",
+      "needs": "Necessità",
+      "wants": "Desideri",
+      "savings": "Risparmio (liquido + investito)",
+      "target": "obiettivo {pct}%"
+    },
+    "recurring": {
+      "title": "Spese fisse e abbonamenti",
+      "subtitle": "rilevati automaticamente",
+      "perMonth": "/mese stimato",
+      "description": "Quanto esce ogni mese in spese fisse e abbonamenti (ultimi {months} mesi).",
+      "empty": "Nessuna spesa ricorrente rilevata negli ultimi {months} mesi.",
+      "months": "{n}m"
+    },
+    "budgets": {
+      "title": "Budget",
+      "subtitle": "questo periodo",
+      "category": "Categoria",
+      "amount": "Al mese",
+      "add": "Aggiungi",
+      "empty": "Imposta budget mensili per le categorie che vuoi tenere d'occhio.",
+      "periodHint": "{amount}/mese × {months}",
+      "remove": "Rimuovi budget",
+      "modeReal": "Reale",
+      "modePlan": "Piano",
+      "planTitle": "Piano del mese prossimo",
+      "planSubtitle": "proietta il budget del mese prossimo",
+      "planIncomes": "Entrate previste",
+      "planIncomesEmpty": "Aggiungi le fonti di reddito che prevedi per il mese prossimo.",
+      "planExpenses": "Spese previste",
+      "planExpensesEmpty": "Aggiungi categorie di spesa per sapere quanto puoi permetterti.",
+      "planSummary": "{income} entrate · {expenses} spese · risparmieresti {savings} ({pct}%)",
+      "planSummaryDeficit": "{income} entrate · {expenses} spese · andresti oltre di {deficit}",
+      "planPctOfIncome": "{pct}% delle entrate",
+      "planIncomePlaceholder": "Fonte di reddito",
+      "split": "Dividi",
+      "splitBadge": "Diviso in {n}",
+      "splitAddPart": "Aggiungi parte",
+      "splitSumMustMatch": "Le parti devono totalizzare {amount}",
+      "splitSumShort": "Mancano {amount} per coprire il totale",
+      "splitSumOver": "Superato di {amount} il totale",
+      "splitRemove": "Rimuovi parte",
+      "splitRemoveAll": "Elimina divisione",
+      "splitNote": "Nota (opzionale)",
+      "splitCategoryLabel": "Categoria",
+      "splitAmountLabel": "Importo"
+    },
+    "heatmap": {
+      "title": "Mappa di calore della spesa giornaliera",
+      "hint": "Clic su un giorno per vederne i movimenti e filtrare la pagina.",
+      "empty": "Nessuna spesa registrata nel {year}.",
+      "less": "Meno",
+      "more": "Più",
+      "spent": "{amount} spesi"
+    },
+    "evolution": {
+      "title": "Ultimi 12 mesi"
+    },
+    "merchants": {
+      "title": "Esercenti principali",
+      "empty": "Nessuna spesa nel periodo."
+    },
+    "movements": {
+      "title": "Movimenti",
+      "selection": "Movimenti della selezione",
+      "empty": "Nessun movimento.",
+      "openInTransactions": "Apri in Transazioni",
+      "close": "Chiudi",
+      "changeCategory": "Cambia categoria",
+      "exclude": "Non contare questo pagamento",
+      "include": "Conta di nuovo questo pagamento",
+      "excluded": "Escluso dall'analisi",
+      "createRule": "Crea anche una regola per movimenti simili",
+      "showAll": "Mostra tutti ({n})"
+    },
+    "rules": {
+      "title": "Regole di categorizzazione",
+      "subtitle": "applicate prima delle regole predefinite",
+      "description": "Espressione regolare (senza distinzione tra maiuscole e minuscole) confrontata con la descrizione del movimento. Facoltativamente limitala a un importo esatto con segno (es. -50).",
+      "pattern": "Modello",
+      "patternPlaceholder": "es. mercadona|lidl",
+      "category": "Categoria",
+      "exactAmount": "Importo esatto (facoltativo)",
+      "add": "Aggiungi regola",
+      "empty": "Nessuna regola personalizzata. Le regole predefinite per i negozi spagnoli più comuni vengono sempre applicate.",
+      "invalidPattern": "Espressione regolare non valida",
+      "uncategorized": "{n} movimenti non categorizzati in questo periodo",
+      "remove": "Rimuovi regola",
+      "amountBadge": "= {amount}"
+    },
+    "tabs": {
+      "overview": "Panoramica",
+      "categories": "Categorie",
+      "calendar": "Calendario",
+      "planning": "Piano"
+    },
+    "empty": {
+      "title": "Ancora nessun movimento bancario",
+      "description": "Collega una banca (es. Santander tramite Enable Banking o GoCardless) da Integrazioni e aggiorna i dati per vedere qui l'analisi delle tue spese.",
+      "goToIntegrations": "Vai a Integrazioni",
+      "forSourceTitle": "Nessun movimento per questa banca",
+      "forSourceDescription": "Non ci sono ancora transazioni di conto per {name}. Aggiornale da Integrazioni per vedere l'analisi di questa banca."
+    },
+    "noExpenses": "Nessuna spesa nel periodo.",
+    "noData": "Nessun movimento nell'intervallo.",
+    "loadError": "Impossibile caricare le transazioni",
+    "groups": {
+      "income": "Entrate",
+      "expense": "Spese",
+      "transfer": "Trasferimenti e risparmio"
+    },
+    "categories": {
+      "salary": "Stipendio",
+      "otherIncome": "Altre entrate",
+      "bizumReceived": "Bizum ricevuto",
+      "interest": "Interessi",
+      "housing": "Casa",
+      "utilities": "Utenze",
+      "groceries": "Supermercato",
+      "restaurants": "Ristoranti",
+      "transport": "Trasporti",
+      "subscriptions": "Abbonamenti",
+      "leisure": "Tempo libero",
+      "health": "Salute",
+      "shopping": "Acquisti",
+      "familyFriends": "Famiglia e amici",
+      "sports": "Sport",
+      "travel": "Viaggi",
+      "fees": "Commissioni",
+      "uncategorized": "Non categorizzato",
+      "ownTransfer": "Trasferimento proprio",
+      "savingsInvestment": "Risparmio e investimenti"
+    }
   }
 }

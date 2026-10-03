@@ -80,6 +80,7 @@ import type {
 import {
   EntitiesPosition,
   PositionQueryRequest,
+  ProductType,
   UpdatePositionRequest,
 } from "../types/position"
 import type {
@@ -95,6 +96,7 @@ import type {
 } from "../types/networthTimeline"
 import type { GainsTimeline, GainsTimelineQuery } from "../types/gainsTimeline"
 import {
+  AccountTx,
   TransactionQueryRequest,
   TransactionsResult,
   ManualTransactionPayload,
@@ -376,6 +378,84 @@ export async function getTransactions(
 
   const queryString = params.toString() ? `?${params.toString()}` : ""
   return (await getApiClient()).get(`/transactions${queryString}`)
+}
+
+const ACCOUNT_TX_PAGE_SIZE = 500
+const ACCOUNT_TX_MAX_PAGES = 200
+
+/**
+ * All account (bank) transactions between two days, inclusive. Used by the
+ * expense analysis, which needs the full set to aggregate client-side.
+ */
+export type CategorizerProvider = "openrouter" | "direct"
+
+export interface CategorizerStatus {
+  connected: boolean
+  provider: CategorizerProvider | null
+  keyHint: string | null
+}
+
+export interface CategorizerAssignment {
+  id: string
+  category: string
+  confidence: number | null
+}
+
+export async function getCategorizerStatus(): Promise<CategorizerStatus> {
+  return (await getApiClient()).get("/analysis/categorizer")
+}
+
+export async function connectCategorizer(
+  provider: CategorizerProvider,
+  apiKey: string,
+): Promise<CategorizerStatus> {
+  return (await getApiClient()).put("/analysis/categorizer", {
+    provider,
+    apiKey,
+  })
+}
+
+export async function disconnectCategorizer(): Promise<void> {
+  return (await getApiClient()).delete("/analysis/categorizer")
+}
+
+export async function categorizePayments(
+  transactions: {
+    id: string
+    concept: string
+    amount: number
+    currency: string
+    date: string
+    entityName: string
+  }[],
+  context?: string,
+): Promise<{ assignments: CategorizerAssignment[] }> {
+  const trimmed = context?.trim()
+  const body: Record<string, unknown> = { transactions }
+  if (trimmed) body.context = trimmed
+  return (await getApiClient()).post("/analysis/categorize", body)
+}
+
+export async function getAccountTransactionsInRange(
+  fromDate: string,
+  toDate: string,
+  entityId?: string,
+): Promise<AccountTx[]> {
+  const all: AccountTx[] = []
+  for (let page = 1; page <= ACCOUNT_TX_MAX_PAGES; page++) {
+    const result = await getTransactions({
+      page,
+      limit: ACCOUNT_TX_PAGE_SIZE,
+      product_types: [ProductType.ACCOUNT],
+      entities: entityId ? [entityId] : undefined,
+      from_date: fromDate,
+      to_date: `${toDate}T23:59:59`,
+    })
+    const txs = (result.transactions ?? []) as AccountTx[]
+    all.push(...txs)
+    if (txs.length < ACCOUNT_TX_PAGE_SIZE) break
+  }
+  return all
 }
 
 export async function getMarketForecastPnl(

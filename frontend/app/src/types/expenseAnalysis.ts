@@ -1,0 +1,220 @@
+import { TxType } from "./transactions"
+
+/**
+ * Expense analysis (ported from Ledger's "Análisis" section).
+ *
+ * Categories are Finanze-side concepts: Finanze transactions don't carry a
+ * category, so they're assigned client-side by the categorization engine
+ * (seeded rules + user rules + per-transaction overrides stored in settings).
+ */
+
+export type CategoryGroup = "income" | "expense" | "transfer"
+
+export type ExpenseCategoryId =
+  | "salary"
+  | "otherIncome"
+  | "bizumReceived"
+  | "interest"
+  | "housing"
+  | "utilities"
+  | "groceries"
+  | "restaurants"
+  | "transport"
+  | "subscriptions"
+  | "leisure"
+  | "health"
+  | "shopping"
+  | "familyFriends"
+  | "sports"
+  | "travel"
+  | "beauty"
+  | "softwareAi"
+  | "education"
+  | "pets"
+  | "insurance"
+  | "fees"
+  | "cashWithdrawal"
+  | "uncategorized"
+  | "ownTransfer"
+  | "savingsInvestment"
+
+export interface ExpenseCategory {
+  id: ExpenseCategoryId
+  group: CategoryGroup
+  color: string
+  need?: boolean
+}
+
+export interface AnalysisTx {
+  id: string
+  ref: string
+  date: string
+  analysisDate?: string
+  amount: number
+  originalAmount: number
+  currency: string
+  concept: string
+  entityId: string
+  entityName: string
+  txType: TxType
+  category: ExpenseCategoryId
+  group: CategoryGroup
+  excluded?: boolean
+  parentId?: string
+}
+
+export interface DateRange {
+  from: string
+  to: string
+}
+
+export type RangePreset =
+  | "month"
+  | "prevMonth"
+  | "3m"
+  | "6m"
+  | "year"
+  | "all"
+  | "custom"
+
+export interface PresetRange extends DateRange {
+  preset: RangePreset
+}
+
+export interface CategoryAggregate {
+  category: ExpenseCategoryId
+  group: CategoryGroup
+  color: string
+  total: number
+  count: number
+}
+
+export interface RangeAggregates {
+  income: number
+  expenses: number
+  savings: number
+  savingsInvestment: number
+  avgDailySpend: number
+  byCategory: CategoryAggregate[]
+}
+
+export interface SavingsBreakdown {
+  income: number
+  expenses: number
+  liquid: number
+  ownTransfer: number
+  invested: number
+  rate: number
+  incomeTxs: AnalysisTx[]
+  expenseTxs: AnalysisTx[]
+  ownTransferTxs: AnalysisTx[]
+  investedTxs: AnalysisTx[]
+}
+
+export interface DailyPoint {
+  date: string
+  income: number
+  expenses: number
+}
+
+export interface HeatmapPoint {
+  date: string
+  spent: number
+}
+
+export interface RecurringExpense {
+  concept: string
+  category: ExpenseCategoryId
+  avgAmount: number
+  monthsSeen: number
+  times: number
+}
+
+export interface RecurringResult {
+  items: RecurringExpense[]
+  monthlyTotal: number
+}
+
+export interface RuleBucket {
+  value: number
+  pct: number
+  target: number
+}
+
+export interface Rule503020Result {
+  income: number
+  needs: RuleBucket
+  wants: RuleBucket
+  savings: RuleBucket
+}
+
+export interface BudgetStatus {
+  category: ExpenseCategoryId
+  color: string
+  monthlyBudget: number
+  budget: number
+  spent: number
+  pct: number
+  remaining: number
+}
+
+export interface MonthlyEvolutionPoint {
+  month: string
+  income: number
+  expenses: number
+}
+
+export interface MerchantTotal {
+  concept: string
+  total: number
+  count: number
+}
+
+export interface CategoryRanking {
+  category: ExpenseCategoryId
+  color: string
+  value: number
+  count: number
+  pct: number
+  delta: number | null
+}
+
+export interface ExpenseCategoryRule {
+  pattern: string
+  category: ExpenseCategoryId
+  amount?: number | null
+}
+
+export interface ExpenseBudget {
+  category: ExpenseCategoryId
+  amount: number
+}
+
+export interface ExpenseCategoryOverride {
+  txId: string
+  category: ExpenseCategoryId
+}
+
+export interface ExpenseSplitPart {
+  id: string
+  category: ExpenseCategoryId
+  amount: number
+  note?: string
+}
+
+export interface ExpenseTxSplit {
+  parentId: string
+  parts: ExpenseSplitPart[]
+}
+
+export interface ExpenseAnalysisConfig {
+  rules: ExpenseCategoryRule[]
+  budgets: ExpenseBudget[]
+  overrides: ExpenseCategoryOverride[]
+  excluded: string[]
+  splits?: ExpenseTxSplit[]
+  /** Projected budgets for the NEXT month (planning view). */
+  planBudgets?: ExpenseBudget[]
+  /** Projected incomes for the NEXT month (planning view). */
+  planIncomes?: ExpenseBudget[]
+}

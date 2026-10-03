@@ -39,6 +39,13 @@ from domain.global_position import (
     GlobalPosition,
     ProductType,
 )
+from domain.transactions import AccountTx, Transactions
+from infrastructure.client.entity.financial.psd2.psd2_transactions import (
+    ENABLEBANKING_MAX_HISTORY_DAYS,
+    MAX_PAGES_PER_ACCOUNT,
+    history_start,
+    map_enablebanking_tx,
+)
 from infrastructure.client.financial.enablebanking.enablebanking_client import (
     EnableBankingClient,
 )
@@ -241,6 +248,66 @@ class EnableBankingFetcher(ExternalEntityFetcher):
         products = {ProductType.ACCOUNT: Accounts(accounts)}
 
         return GlobalPosition(id=uuid4(), entity=request.entity, products=products)
+
+    async def transactions(
+        self, request: ExternalEntityFetchRequest, registered_refs: set[str]
+    ) -> Transactions:
+        payload = request.external_entity.payload or {}
+        raw_accounts = payload.get("accounts", [])
+        date_from = history_start(
+            registered_refs, max_days=ENABLEBANKING_MAX_HISTORY_DAYS
+        )
+        self._log.info(
+            "PSD2 transactions: %s accounts, date_from=%s",
+            len(raw_accounts),
+            date_from,
+        )
+
+        account_txs: list[AccountTx] = []
+        seen: set[str] = set(registered_refs)
+
+        for raw_account in raw_accounts:
+            uid = raw_account.get("uid")
+            if not uid:
+                continue
+
+            continuation_key = None
+            for _ in range(MAX_PAGES_PER_ACCOUNT):
+                try:
+                    page = await self._client.get_account_transactions(
+                        uid, date_from=date_from, continuation_key=continuation_key
+                    )
+                except httpx.HTTPStatusError as e:
+                    code = e.response.status_code
+                    self._log.error(
+                        "Enable Banking transactions failed for %s: %s %s",
+                        uid,
+                        code,
+                        e,
+                    )
+                    if code == 410:
+                        raise ExternalEntityLinkExpired() from e
+                    elif code == 429:
+                        raise TooManyRequests() from e
+                    else:
+                        raise ExternalEntityFailed() from e
+
+                raw_txs = page.get("transactions", []) or []
+                self._log.info(
+                    "Enable Banking account %s page: %s raw txs", uid, len(raw_txs)
+                )
+                for raw_tx in raw_txs:
+                    tx = map_enablebanking_tx(raw_tx, uid, request.entity)
+                    if tx is None or tx.ref in seen:
+                        continue
+                    seen.add(tx.ref)
+                    account_txs.append(tx)
+
+                continuation_key = page.get("continuation_key")
+                if not continuation_key:
+                    break
+
+        return Transactions(account=account_txs)
 
     async def _resolve_aspsp(
         self, request: ExternalEntityLoginRequest, external_entity

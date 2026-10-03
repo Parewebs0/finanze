@@ -245,14 +245,22 @@ export default function TransactionsPage() {
     TransactionsResult["transactions"]
   >([])
 
-  const [filters, setFilters] = useState<TransactionFilters>(() => ({
-    entities: [],
-    product_types: [],
-    types: [],
-    from_date: "",
-    to_date: "",
-    historic_entry_id: initialHistoricEntryIdRef.current,
-  }))
+  const [filters, setFilters] = useState<TransactionFilters>(() => {
+    // Deep links (e.g. from the expense analysis page) may preset a date range
+    const params = new URLSearchParams(location.search)
+    const dateParam = (key: string) => {
+      const value = params.get(key) ?? ""
+      return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : ""
+    }
+    return {
+      entities: params.getAll("entity"),
+      product_types: [],
+      types: [],
+      from_date: dateParam("from_date"),
+      to_date: dateParam("to_date"),
+      historic_entry_id: initialHistoricEntryIdRef.current,
+    }
+  })
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create")

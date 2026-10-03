@@ -13,6 +13,7 @@ from application.use_cases.cancel_entity_login import CancelEntityLoginImpl
 from application.use_cases.add_manual_transaction import AddManualTransactionImpl
 from application.use_cases.calculate_loan import CalculateLoanImpl
 from application.use_cases.calculate_savings import CalculateSavingsImpl
+from application.use_cases.categorizer import CategorizerService
 from application.use_cases.change_user_password import ChangeUserPasswordImpl
 from application.use_cases.complete_external_entity_connection import (
     CompleteExternalEntityConnectionImpl,
@@ -206,6 +207,7 @@ from infrastructure.cloud.backup.backup_processor_adapter import (
     BackupProcessorAdapter,
 )
 from infrastructure.cloud.cloud_data_register import CloudDataRegister
+from infrastructure.categorizer.jev_client import JevCategorizerClient
 from infrastructure.config.config_loader import ConfigLoader
 from infrastructure.config.server_details_adapter import (
     ServerDetailsAdapter,
@@ -599,6 +601,7 @@ class FinanzeServer:
             external_integration_repository,
             last_fetches_repository,
             transaction_handler,
+            transaction_repository,
         )
         export_sheets = ExportSheetsImpl(
             position_repository,
@@ -667,6 +670,9 @@ class FinanzeServer:
         )
         get_settings = GetSettingsImpl(config_loader)
         update_settings = UpdateSettingsImpl(config_loader)
+        categorizer_service = CategorizerService(
+            config_loader.categorizer, JevCategorizerClient()
+        )
         get_telemetry_consent = GetTelemetryConsentImpl(telemetry_consent_port)
         update_telemetry_consent = UpdateTelemetryConsentImpl(
             telemetry_consent_port, self._error_reporter
@@ -1084,6 +1090,7 @@ class FinanzeServer:
             get_euribor_rates,
             get_telemetry_consent,
             update_telemetry_consent,
+            categorizer_service,
         )
 
         self._log.info("Warming up exchange rates...")

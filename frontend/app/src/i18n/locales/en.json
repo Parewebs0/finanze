@@ -3419,5 +3419,207 @@
     "resetConfirmMessage": "Are you sure you want to reset all advanced settings to their defaults?",
     "resetConfirmWarning": "The app will restart after resetting.",
     "availableAfterLoading": "Available after loading"
+  },
+  "expenseAnalysis": {
+    "title": "Spending analysis",
+    "navLabel": "Analysis",
+    "refresh": "Refresh",
+    "source": {
+      "placeholder": "Select a bank"
+    },
+    "categorizer": {
+      "title": "Categorize with Jev",
+      "description": "Connect Jev from the app. The key stays in this local profile. OpenRouter uses model ~typesafe/jev-latest. Direct uses Jev at api.typesafe.ai.",
+      "openrouter": "OpenRouter",
+      "direct": "Jev direct",
+      "apiKey": "API key",
+      "openrouterHint": "OpenRouter key",
+      "directHint": "TypeSafe key",
+      "connect": "Connect",
+      "checking": "Checking key…",
+      "connected": "Jev is connected",
+      "disconnect": "Disconnect",
+      "using": "{provider} · {hint}",
+      "onlyUncategorized": "Only uncategorized movements in this period",
+      "recategorize": "Recategorize",
+      "working": "Categorizing…",
+      "done": "Updated {n} movements"
+    },
+    "presets": {
+      "month": "This month",
+      "prevMonth": "Last month",
+      "3m": "3 months",
+      "6m": "6 months",
+      "year": "Year",
+      "all": "All",
+      "custom": "Custom"
+    },
+    "from": "From",
+    "to": "To",
+    "activeView": "Active view",
+    "day": "Day {day}",
+    "fromTo": "{from} – {to}",
+    "viewTransactions": "View transactions",
+    "backToFullPeriod": "Back to full period",
+    "kpis": {
+      "income": "Income",
+      "expenses": "Expenses",
+      "savingsRate": "Savings rate",
+      "savingsRateSub": "{saved} saved + {invested} invested",
+      "avgDailySpend": "Avg. daily spend",
+      "vsPrevious": "vs previous period"
+    },
+    "cashflow": {
+      "title": "Daily cashflow",
+      "hintDesktop": "Click a day · drag to select a range",
+      "hintMobile": "Tap a day to see its movements",
+      "income": "Income",
+      "expense": "Spending"
+    },
+    "distribution": {
+      "title": "Spending distribution",
+      "hint": "Click a slice to filter the cashflow and the heatmap",
+      "hintMobile": "Tap a category to filter the whole page"
+    },
+    "ranking": {
+      "title": "Ranking by category",
+      "total": "{amount} total",
+      "times": "{n}×"
+    },
+    "rule": {
+      "title": "50/30/20 rule",
+      "subtitle": "needs / wants / savings",
+      "needs": "Needs",
+      "wants": "Wants",
+      "savings": "Savings (cash + invested)",
+      "target": "target {pct}%"
+    },
+    "recurring": {
+      "title": "Fixed costs & subscriptions",
+      "subtitle": "auto-detected",
+      "perMonth": "/month (est.)",
+      "description": "What goes out every month in fixed costs and subscriptions (last {months} months).",
+      "empty": "No recurring expenses detected in the last {months} months.",
+      "months": "{n}m"
+    },
+    "budgets": {
+      "title": "Budgets",
+      "subtitle": "this period",
+      "category": "Category",
+      "amount": "Per month",
+      "add": "Add",
+      "empty": "Set monthly budgets for the categories you want to keep an eye on.",
+      "periodHint": "{amount}/month × {months}",
+      "remove": "Remove budget",
+      "modeReal": "Actual",
+      "modePlan": "Plan",
+      "planTitle": "Next month plan",
+      "planSubtitle": "project next month's budget",
+      "planIncomes": "Projected income",
+      "planIncomesEmpty": "Add the income sources you expect to receive next month.",
+      "planExpenses": "Projected expenses",
+      "planExpensesEmpty": "Add spending categories to know how much you can afford.",
+      "planSummary": "{income} income · {expenses} expenses · you'd save {savings} ({pct}%)",
+      "planSummaryDeficit": "{income} income · {expenses} expenses · you'd overspend by {deficit}",
+      "planPctOfIncome": "{pct}% of income",
+      "planIncomePlaceholder": "Income source",
+      "split": "Split",
+      "splitBadge": "Split into {n}",
+      "splitAddPart": "Add part",
+      "splitSumMustMatch": "Parts must total {amount}",
+      "splitSumShort": "Missing {amount} to cover the total",
+      "splitSumOver": "Over by {amount} of the total",
+      "splitRemove": "Remove part",
+      "splitRemoveAll": "Remove split",
+      "splitNote": "Note (optional)",
+      "splitCategoryLabel": "Category",
+      "splitAmountLabel": "Amount"
+    },
+    "heatmap": {
+      "title": "Daily spending heatmap",
+      "hint": "Click a day to see its movements and filter the page to that day.",
+      "empty": "No spending recorded in {year}.",
+      "less": "Less",
+      "more": "More",
+      "spent": "{amount} spent"
+    },
+    "evolution": {
+      "title": "Last 12 months"
+    },
+    "merchants": {
+      "title": "Top merchants",
+      "empty": "No spending in this period."
+    },
+    "movements": {
+      "title": "Movements",
+      "selection": "Movements in selection",
+      "empty": "No movements.",
+      "openInTransactions": "Open in Transactions",
+      "close": "Close",
+      "changeCategory": "Change category",
+      "exclude": "Don't count this payment",
+      "include": "Count this payment again",
+      "excluded": "Excluded from analysis",
+      "createRule": "Also create a rule for similar movements",
+      "showAll": "Show all ({n})"
+    },
+    "rules": {
+      "title": "Categorization rules",
+      "subtitle": "applied before the built-in rules",
+      "description": "Case-insensitive regular expression matched against the movement concept. Optionally restrict it to an exact signed amount (e.g. -50).",
+      "pattern": "Pattern",
+      "patternPlaceholder": "e.g. mercadona|lidl",
+      "category": "Category",
+      "exactAmount": "Exact amount (optional)",
+      "add": "Add rule",
+      "empty": "No custom rules yet. Built-in rules for common Spanish merchants are always applied.",
+      "invalidPattern": "Invalid regular expression",
+      "uncategorized": "{n} uncategorized movements in this period",
+      "remove": "Remove rule",
+      "amountBadge": "= {amount}"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "categories": "Categories",
+      "calendar": "Calendar",
+      "planning": "Planning"
+    },
+    "empty": {
+      "title": "No bank movements yet",
+      "description": "Connect a bank (e.g. Santander through Enable Banking or GoCardless) from Integrations and fetch its data to see your spending analysis here.",
+      "goToIntegrations": "Go to Integrations",
+      "forSourceTitle": "No movements for this bank",
+      "forSourceDescription": "There are no account transactions for {name} yet. Fetch them from Integrations to see this bank's spending analysis."
+    },
+    "noExpenses": "No spending in this period.",
+    "noData": "No movements in this range.",
+    "loadError": "Couldn't load the transactions",
+    "groups": {
+      "income": "Income",
+      "expense": "Expenses",
+      "transfer": "Transfers & savings"
+    },
+    "categories": {
+      "salary": "Salary",
+      "otherIncome": "Other income",
+      "bizumReceived": "Bizum received",
+      "interest": "Interest",
+      "housing": "Housing",
+      "utilities": "Utilities",
+      "groceries": "Groceries",
+      "restaurants": "Restaurants",
+      "transport": "Transport",
+      "subscriptions": "Subscriptions",
+      "leisure": "Leisure",
+      "health": "Health",
+      "shopping": "Shopping",
+      "familyFriends": "Family & friends",
+      "sports": "Sports",
+      "travel": "Travel",
+      "fees": "Fees",
+      "uncategorized": "Uncategorized",
+      "ownTransfer": "Own transfer",
+      "savingsInvestment": "Savings & investment"
+    }
   }
 }
